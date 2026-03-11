@@ -446,13 +446,18 @@ function bindFieldIdx(id,arr,idx,field){
 // ============================================================
 // TAB RENDERERS
 // ============================================================
+function toSnakeCase(str){
+  return str.trim().toLowerCase()
+    .replace(/[^a-z0-9\s_]/g,"")
+    .replace(/\s+/g,"_")
+    .replace(/_+/g,"_")
+    .replace(/^_|_$/g,"");
+}
+
 function renderBasics(){
   return `
     <div class="section"><h3>Identity</h3><p class="subtitle">Core identifiers used in the YAML frontmatter and referenced by AI models.</p>
-      <div class="grid-2">
-        ${fieldHTML("f-name","Persona Name",state.name,{placeholder:"e.g. Field Pilot"})}
-        ${fieldHTML("f-id","Persona ID (snake_case)",state.id,{placeholder:"e.g. field_pilot"})}
-      </div>
+      ${fieldHTML("f-name","Persona Name",state.name,{placeholder:"e.g. Field Pilot"})}
       <div class="grid-3">
         ${fieldHTML("f-role","Role",state.role,{placeholder:"e.g. On-scene drone operator"})}
         <div class="field"><label>Classification</label>
@@ -469,7 +474,9 @@ function renderBasics(){
     </div>`;
 }
 function bindBasics(){
-  bindField("f-name","name");bindField("f-id","id");bindField("f-role","role");
+  const nameEl=document.getElementById("f-name");
+  if(nameEl) nameEl.addEventListener("input",()=>{state.name=nameEl.value;state.id=toSnakeCase(nameEl.value);updateFooter();updatePreview();});
+  bindField("f-role","role");
   bindField("f-icon","icon");bindField("f-desc","description");bindField("f-ctx","context");
   const sel=document.getElementById("f-class");
   if(sel) sel.addEventListener("change",()=>{state.classification=sel.value;updatePreview();});
