@@ -167,6 +167,17 @@ body{
   .footer{padding:8px 16px;gap:12px;font-size:11px;flex-wrap:wrap}
 }
 
+/* Template sidebar */
+.template-sidebar{width:210px;border-right:1px solid var(--border-subtle);background:var(--surface-subtle);overflow-y:auto;max-height:calc(100vh - 110px);position:sticky;top:0;flex-shrink:0;padding:12px 8px}
+.template-sidebar-head{font-size:11px;font-weight:700;color:var(--text-tertiary);letter-spacing:.8px;text-transform:uppercase;padding:0 8px 10px;font-family:var(--font-display)}
+.template-card{border-radius:var(--radius);padding:8px 10px;cursor:pointer;transition:background .15s,border-color .15s;border:1px solid transparent;margin-bottom:4px}
+.template-card:hover{background:var(--surface-emphasis);border-color:var(--border-subtle)}
+.template-card.active{background:var(--info-bg);border-color:var(--brand)}
+.template-card-icon{font-size:15px;margin-bottom:2px}
+.template-card-name{font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:2px}
+.template-card-desc{font-size:11px;color:var(--text-tertiary);line-height:1.4}
+@media(max-width:900px){.template-sidebar{display:none}}
+
 /* Import modal */
 .import-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
 .import-card{background:var(--surface-emphasis);border:1px solid var(--border-medium);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
@@ -201,6 +212,7 @@ body{
 
   <!-- Main -->
   <div class="main">
+    <div class="template-sidebar" id="templateSidebar"></div>
     <div class="content" id="content"></div>
     <div class="preview-panel hidden" id="previewPanel">
       <div class="preview-header">
@@ -340,6 +352,16 @@ let state = {
 let currentTab = "basics";
 let showPreview = false;
 let expandedFactors = {};
+let activeTemplate = null;
+
+const TEMPLATES=[
+  {id:"tpl-admin",name:"Manager / Admin",icon:"⚡",desc:"Always justifying the program. Turns flight data into political ammunition."},
+  {id:"tpl-field-pilot",name:"Field Pilot",icon:"🛸",desc:"Doesn't think about DroneSense. The drone is a tool — invisible when working, infuriating when not."},
+  {id:"tpl-ground-team",name:"Ground Team",icon:"🥾",desc:"Boots on the ground translating aerial intelligence into real-time decisions."},
+  {id:"tpl-playback-viewer",name:"Playback Viewer",icon:"🔍",desc:"Post-incident investigator. Treats footage as evidence, not a tactical tool."},
+  {id:"tpl-remote-pilot",name:"Remote Pilot",icon:"🎮",desc:"DFR specialist. First first responder — arrives on scene before anyone else."},
+  {id:"tpl-viewer",name:"Viewer",icon:"👁️",desc:"Live feed consumer making active command decisions from aerial intelligence."},
+];
 
 // ============================================================
 // TABS
@@ -707,6 +729,41 @@ function bindExtras(){
 }
 
 // ============================================================
+// TEMPLATES
+// ============================================================
+function hasActiveWork(){
+  return !!(state.name||state.description||state.context||
+    state.needs.some(n=>n.text)||state.scenarios.some(s=>s.trigger)||
+    state.antiGoals.some(a=>a.trim())||state.vocabulary||state.wishList);
+}
+function loadTemplate(tpl){
+  if(hasActiveWork()&&!confirm('Load "'+tpl.name+'"?\n\nThis will replace your current work.')){return;}
+  const el=document.getElementById(tpl.id);
+  if(!el) return;
+  const parsed=parsePersonaMarkdown(el.textContent.trim());
+  Object.assign(state,parsed);
+  activeTemplate=tpl.id;
+  currentTab="basics";
+  render();
+}
+function renderSidebar(){
+  const sb=document.getElementById("templateSidebar");
+  if(!sb) return;
+  sb.innerHTML=`<div class="template-sidebar-head">Templates</div>`+
+    TEMPLATES.map(t=>`<div class="template-card${activeTemplate===t.id?" active":""}" data-tpl="${t.id}">
+      <div class="template-card-icon">${t.icon}</div>
+      <div class="template-card-name">${t.name}</div>
+      <div class="template-card-desc">${t.desc}</div>
+    </div>`).join("");
+  sb.querySelectorAll("[data-tpl]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const tpl=TEMPLATES.find(t=>t.id===el.dataset.tpl);
+      if(tpl) loadTemplate(tpl);
+    });
+  });
+}
+
+// ============================================================
 // IMPORT / PARSE
 // ============================================================
 function parsePersonaMarkdown(md){
@@ -846,6 +903,7 @@ function loadFromText(text){
   const parsed=parsePersonaMarkdown(text);
   if(!parsed.name){showImportError("Could not read the persona name. Check the file format.");return;}
   Object.assign(state,parsed);
+  activeTemplate=null;
   currentTab="basics";
   closeImportModal();
   render();
@@ -902,6 +960,7 @@ function bindPrompt(){
 // ============================================================
 function render(){
   renderTabs();
+  renderSidebar();
   const content=document.getElementById("content");
   const renderers={basics:renderBasics,needs:renderNeeds,profile:renderProfile,human:renderHuman,scenarios:renderScenarios,extras:renderExtras,prompt:renderPrompt};
   content.innerHTML=renderers[currentTab]();
@@ -1226,6 +1285,755 @@ scenarios:
 ## Wish List
 
 I want to press one button and be in the air. Stop asking me to confirm things I always confirm. When I land, just save everything automatically — I'm not going to type notes at a fire scene. And if I haven't used the app in three weeks, I shouldn't have to re-figure out where anything is. It should feel like I never left.
+</script>
+
+<script type="text/template" id="tpl-admin">
+# Persona: Manager / Admin
+
+```yaml
+persona_id: admin
+role: UAS program manager / administrator
+classification: CORE USER
+icon: ⚡
+```
+
+## Who is this user?
+
+Manages (or helps manage) the drone program. Anyone that performs duties to one such area can be an admin. Some larger programs have full-time admin job titles such as "UAS Program Admin." The defining truth about this persona: they are always justifying the program's existence. Every budget cycle, every leadership change, every community controversy is a potential threat to the program they've built. The data they need from DroneSense isn't just operational — it's political ammunition for city council, the chief, and grant committees.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Proving and growing the program's value with data"
+    context: "This is existential. Without compelling ROI data — response times, call clearing rates, cost comparisons — the program loses funding and dies. Every report, dashboard, and export must serve this mission."
+  - weight: 5/5 (Critical)
+    need: "Complete, reliable data in the system"
+    context: "Reports are only credible if the underlying data is complete. Every unlogged flight, every missing field undermines the story. Getting data into DroneSense — and keeping pilots logging — is a prerequisite for everything else."
+  - weight: 4/5 (High)
+    need: "Compliance management without consuming all available time"
+    context: "FAA Part 107 currency, NDAA compliance, CJIS, COA/BVLOS waivers, state laws, Remote ID — the regulatory surface area is enormous. Failing compliance creates the risk events that can kill the program."
+  - weight: 3/5 (Medium)
+    need: "Getting data out quickly in formats that work for non-technical audiences"
+    context: "City council members, grant committees, and new chiefs don't read spreadsheets. Data must export into presentation-ready formats that tell a story."
+  - weight: 2/5 (Low)
+    need: "Consolidating tools — stop using Excel, AirData, Aloft alongside DroneSense"
+    context: "Every external tool is a data silo that makes reporting harder and introduces inconsistency. The fewer systems, the less friction."
+  - weight: 1/5 (Nice to have)
+    need: "Fleet management details — battery lifecycle, firmware tracking, maintenance scheduling"
+    context: "Real operational concerns, but secondary to the value justification mission. These become critical only when equipment failures threaten the program's reputation."
+```
+
+## User Context
+
+Working at a desk — office, precinct, or sometimes from home. Manages the program across multiple domains: personnel, equipment, policies, reporting, resourcing, community outreach, data management, training, and pilot currency. Thinks in budget cycles, compliance windows, and strategic planning horizons. Uses web dashboards and spreadsheets extensively. Chronic moderate stress that spikes during budget presentations, audits, leadership transitions, and political scrutiny.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 6/10 — Comfortable with web dashboards and spreadsheets. Not a developer. Often a self-taught drone enthusiast who championed the technology internally and now owns it organizationally.
+risk_tolerance: 4/10 — Risk-averse organizationally. Hyper-aware of compliance exposure, political backlash, and audit risk. One bad incident, one missed compliance deadline, or one community controversy can unravel years of work.
+stress_level_during_use: 5/10 — Chronic moderate stress, not acute incident stress. Spikes sharply during budget cycles, audits, leadership transitions, and political scrutiny.
+decision_speed: Days to months — Thinks in budget cycles, compliance windows, and strategic planning horizons.
+adoption_attitude: Innovation champion — Self-selected technology advocate who volunteered to build the program. Early adopter by conviction, now its most invested defender.
+primary_motivation: Proving and growing the program — genuine belief that drones save lives, sustained by organizational pressure to demonstrate it with data.
+secondary_motivation: Career advancement — successful program managers become sought-after speakers, consultants, and peer advisors within DRONERESPONDERS and LEDA communities.
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Office/desk environment with standard equipment"
+    impact: "No extreme environmental constraints. Standard monitors, keyboard, mouse. Lighting and connectivity are generally reliable."
+  - factor: "Occasional field presence during major incidents or demonstrations"
+    impact: "May need to pull up dashboards or reports on a laptop or tablet during site visits, community events, or ride-alongs. Mobile access to key metrics matters occasionally."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Extended screen time during reporting periods"
+    impact: "During budget cycles and audit prep, spends hours in dashboards and exports. UI must minimize clicks for repetitive tasks and support efficient batch operations."
+  - factor: "Presentation contexts — projecting or screen-sharing reports"
+    impact: "Reports and dashboards may be shown on a projector to city council or shared on a video call with grant reviewers. Visual clarity at distance and in low-contrast projection environments matters."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Existential program anxiety"
+    impact: "Carries the weight of knowing the program could be cut. This creates a strong emotional response to incomplete data, missed compliance deadlines, and reports that don't tell a compelling story."
+  - factor: "Chronic context-switching across management domains"
+    impact: "Juggles personnel, equipment, compliance, budgets, community relations, and training — often in a single day. The system must not require deep focus to use; quick-in, quick-out interactions are essential."
+  - factor: "Frustration with pilot non-compliance on logging"
+    impact: "Incomplete flight data is a persistent, emotionally charged problem. Every unlogged flight feels like a personal failure because it undermines the reports they depend on."
+```
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Annual budget justification presentation to city council
+    goal: Walk in with a compelling data story — not a spreadsheet — that secures continued or increased funding
+    current_pain: Data scattered across DroneSense, Excel, AirData, Aloft. Hours of manual assembly. Report looks homemade. Numbers don't tell the story on their own.
+    ideal_experience: One-click exportable report from Airbase with response times, mission types, call clearing rates, ROI metrics, and compliance status — formatted for a non-technical audience
+
+  - trigger: FAA audit notification or NDAA compliance review
+    goal: Demonstrate full regulatory compliance across all pilots, equipment, and flights without scrambling
+    current_pain: Pilot currency tracked in spreadsheets; some flights not logged; mixed fleet complicates NDAA documentation
+    ideal_experience: Automated compliance dashboard showing all certifications, waivers, and equipment clearance status with gaps flagged before they become problems
+```
+
+## Anti-Goals
+
+- Does NOT want to be a pilot full-time — they manage, not fly (though many are certified)
+- Does NOT want to use multiple disconnected systems to run the program
+- Does NOT want to manually assemble reports that DroneSense already has all the data to generate
+- Does NOT want surprises during audits or budget reviews
+
+## Domain Vocabulary
+
+`flight hours, sortie, mission type, Part 107, COA, BVLOS waiver, pilot currency, recurrent training, NDAA, Blue UAS, Green UAS, Cleared List, CJIS, data retention, fleet management, maintenance cycle, battery health, charge cycles, ROI, cost-per-flight-hour, call clearing rate, response time, grant cycle, SHSGP, UASI, Byrne JAG, community engagement, transparency report, program metrics, budget justification`
+
+## Wish List
+
+Show me the ROI story automatically — response times, calls cleared, officer deployments avoided. I shouldn't have to build this from scratch every quarter. One-click exports that look professional enough to hand to a city council member or a grant reviewer without reformatting. Automated pilot currency tracking and reminders so I'm not chasing people with emails. Help me consolidate — I want to stop running my program across DroneSense, Excel, AirData, and Aloft.
+</script>
+
+<script type="text/template" id="tpl-field-pilot">
+# Persona: Field Pilot
+
+```yaml
+persona_id: field_pilot
+role: On-scene drone operator (collateral duty)
+classification: CORE USER
+icon: 🛸
+```
+
+## Who is this user?
+
+They fly drones to enhance their primary job. Field Pilots have assigned equipment or access to it and receive training on how to use it as the need arises in their work. Specialists have more experience and training, and therefore will be more likely to fly for missions. The defining truth about this persona: they don't think about DroneSense. They don't care about the software. The drone is a tool — like a radio or a flashlight — and their entire mental model is: take off, fly, stream video, land. DroneSense is only noticed when it gets in the way.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Zero friction at launch — no logins, no confirmations, no configuration"
+    context: "Every click that isn't flying is a click that's in the way. Login screens, firmware check prompts, confirmation dialogs, and configuration settings at launch time are all experienced as the software failing them. They're already in incident mode when they reach for the app."
+  - weight: 5/5 (Critical)
+    need: "Absolute reliability — the app must work every single time"
+    context: "They will not tolerate software that crashes, hangs, or behaves unpredictably. One failure during a critical deployment damages trust permanently. They will switch back to the OEM app without hesitation."
+  - weight: 4/5 (High)
+    need: "Feature parity with OEM controller apps"
+    context: "If DroneSense Pilot can't do something that the DJI or Skydio native app can, they will use the native app instead. Every missing feature is a reason to bypass DroneSense entirely."
+  - weight: 3/5 (Medium)
+    need: "Clear, real-time feedback on connectivity and network status"
+    context: "Operating in areas with variable cellular coverage and potential RF interference. They need to know immediately when signal degrades — not discover it when the feed drops."
+  - weight: 2/5 (Low)
+    need: "Automatic data capture — no post-flight data entry"
+    context: "They do not want to return to a computer after a flight to complete, annotate, or review records. Everything should be captured automatically. At most, a quick one-tap confirmation. No homework after the real work is done."
+  - weight: 1/5 (Nice to have)
+    need: "Interface familiarity with controller muscle memory"
+    context: "Pilots trained on DJI Mode 2 controllers develop strong muscle memory. Cognitive conflict arises when the software interface deviates from what they've internalized physically."
+```
+
+## User Context
+
+Operating in the field — on scene at incidents, sometimes from a vehicle. Drone use is not their primary job; 91% of public safety drone pilots serve in collateral roles. They must mentally switch between their primary role (patrol, investigation, firefighting) and technically demanding drone piloting under time pressure. Equipment needs to work without asking anything of them. Stressful situations where attention is split. Connectivity is variable. Weather, lighting, and terrain all affect operations. They may be wearing gloves, carrying other equipment, and managing radio comms simultaneously.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 7/10 — Self-selected technology enthusiast who volunteered for drone duty. Comfortable with drone hardware and OEM apps. But their comfort is with the drone, not the software platform. DroneSense is infrastructure — invisible when working, infuriating when not.
+risk_tolerance: 7/10 — Comfortable flying in challenging conditions within SOPs. Won't bypass regulations but pushes boundaries when lives are at stake.
+stress_level_during_use: 7/10 — Elevated from dual-task demand (primary role + piloting) compounded by environmental conditions, equipment anxiety, and time pressure.
+decision_speed: Seconds to minutes — Pre-flight assessment in minutes; in-flight tactical decisions in seconds.
+adoption_attitude: Early adopter of drones — not of software. Will resist any workflow that adds steps to a process they consider already solved.
+primary_motivation: Saving lives and making a difference — the drone is a tool that makes their primary job more effective and safer.
+secondary_motivation: Getting the mission done and getting back to their primary role.
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Outdoor field conditions — sun, rain, wind, dust, temperature extremes"
+    impact: "Screen glare in direct sunlight makes low-contrast UI elements invisible. Rain and dust on screens affect touch accuracy. Cold affects both battery performance and the pilot's dexterity."
+  - factor: "Variable cellular and RF coverage"
+    impact: "Operating in areas where connectivity is unreliable — rural, dense urban, interior. The app must provide clear signal indicators and degrade gracefully. Offline-capable core functions matter."
+  - factor: "High winds, precipitation, GPS denial zones"
+    impact: "Environmental factors that affect flight safety must be surfaced clearly and early — not discovered mid-flight."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Juggling controller and separate device simultaneously"
+    impact: "The dual-device problem: holding a remote controller in one hand and managing a separate tablet/phone in the other creates real cognitive tax. Any action requiring two hands on the screen while flying is dangerous."
+  - factor: "Gloved operation in cold or tactical conditions"
+    impact: "Touchscreen interactions must accommodate gloved fingers — large targets, gesture-based navigation, minimal precision tapping."
+  - factor: "Standing, sometimes moving, in variable terrain"
+    impact: "Not seated at a desk. Holding a controller while standing in a field or on a road shoulder. Physical stability is limited. Screen interactions must be simple and forgiving."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Dual-task cognitive load — primary role and piloting"
+    impact: "Must mentally switch between their primary duty and technically demanding drone piloting under time pressure. Every additional software step compounds this split."
+  - factor: "Equipment readiness anxiety"
+    impact: "Firmware update prompts at launch time are experienced as a crisis. Battery uncertainty and signal degradation are persistent. The app must never add to this anxiety — it must reduce it."
+  - factor: "Software indifference to hostility"
+    impact: "Every additional tap, login screen, confirmation dialog, or configuration setting is experienced as the software getting in the way of real work. Accumulated friction drives them back to OEM apps permanently."
+```
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Dispatched to structure fire — need aerial view for IC
+    goal: Get drone airborne fast, provide thermal and visual feeds to IC, maintain safe distance from fire operations
+    current_pain: App requires login, firmware check delays launch by 2–3 minutes, separate thermal/visual toggle is clunky with gloves on
+    ideal_experience: Instant launch flow with no friction — no login, no confirmation screens, no configuration. Auto-stream to IC on OpsHub. One-tap thermal/visual toggle with large touch targets.
+
+  - trigger: End of shift after 3 flights
+    goal: Be done. Go home.
+    current_pain: Expected to log flight data manually — either in the field on a small screen with poor connectivity, or later at a computer. Both feel like homework after the real work is done.
+    ideal_experience: Everything is already captured automatically. At most, a quick one-tap confirmation. No revisiting flights. No computer required.
+```
+
+## Anti-Goals
+
+- Does NOT think about DroneSense — it should be invisible infrastructure
+- Does NOT want any friction at launch: no logins, no confirmations, no configuration
+- Does NOT want to return to a computer after a flight to complete, annotate, or review records
+- Does NOT want to be a software tester — the app must work reliably every time
+
+## Domain Vocabulary
+
+`pre-flight, post-flight, checklist, RTH, RTL, Mode 2, gimbal, thermal, visual, EO, IR, orthomosaic, waypoint mission, orbit, POI, AGL, obstacle avoidance, signal strength, RSSI, link loss, failsafe, geofence, TFR, airspace, Part 107, VLOS, spotter, VO, PIC, battery health, firmware, calibration`
+
+## Wish List
+
+Just work. Every time. I grab the controller, I open the app, I'm flying. No steps in between. Don't make me log flights after the fact. You know what I flew, when, where, and for how long — capture it automatically. Match what the DJI app does. Tell me about connectivity problems before they become problems.
+</script>
+
+<script type="text/template" id="tpl-ground-team">
+# Persona: Ground Team
+
+```yaml
+persona_id: ground_team
+role: Field operator consuming aerial intelligence during active operations
+classification: CORE USER
+icon: 🥾
+```
+
+## Who is this user?
+
+Boots on the ground, taking action from what they see on the drone feed. SWAT operators, patrol officers on approach, suspect trackers, evidence collectors, perimeter teams. They come from inside the agency or from coordinating agencies on a shared mission. They don't fly — they consume the aerial picture and translate it into ground-level decisions in seconds.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Low-latency, reliable video feed with contextual map overlay"
+    context: "Any delay >1–2 seconds makes tactical decisions unreliable. The feed is their primary intelligence source — if it lags or drops, they lose the advantage the drone was launched to provide."
+  - weight: 5/5 (Critical)
+    need: "Works under extreme stress with minimal interaction"
+    context: "Under acute stress, fine motor skills degrade, tunnel vision occurs, and multi-step workflows get abandoned. The UI must function with gloved hands, split attention, and zero tolerance for complexity."
+  - weight: 4/5 (High)
+    need: "Location context — where the drone is looking, where teammates are, where threats are"
+    context: "The bird's eye view is only useful if they can orient it to their position on the ground. Markers, team positions, and building-side callouts (Alpha/Bravo/Charlie/Delta) turn raw video into actionable intelligence."
+  - weight: 3/5 (Medium)
+    need: "Integration with existing communication stack (radio, ATAK, MDT)"
+    context: "They won't switch tools during an incident. DroneSense must work within or alongside the tools already on their belt and in their vehicle — especially ATAK and radio."
+  - weight: 2/5 (Low)
+    need: "Simultaneous video and map view on a single screen"
+    context: "Switching between apps for video, map, and team positions adds cognitive load during approach. A combined view reduces the number of things competing for attention."
+  - weight: 1/5 (Nice to have)
+    need: "Simpler alternative to TAK for agencies without it"
+    context: "Some agencies want TAK-like situational awareness without the complexity of TAK itself. A lightweight common operating picture would serve smaller teams."
+```
+
+## User Context
+
+Operating in high-pressure, high-consequence environments — active pursuits, SWAT entries, structure fires, search operations. Phone users are mobile, on foot. Tablet users may be stationed in a vehicle or mobile command center. Connectivity is variable — cellular coverage gaps are common in the field. Everything they do with DroneSense happens alongside radio comms, physical environment awareness, and team coordination.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 5/10 — Competent with issued devices (MDT, tablet, phone) but not power users. Will abandon complex workflows under stress.
+risk_tolerance: 8/10 — Comfortable operating in high-risk environments. Pragmatic about drone reliability; sees drones as risk-reduction tools.
+stress_level_during_use: 9/10 — Highest acute cognitive load of any persona. Fine motor skills degrade, tunnel vision occurs, auditory exclusion is common during active incidents.
+decision_speed: Seconds — OODA loop runs in seconds. DFR feeds arrive 60–90 seconds before officers; tactical decisions happen immediately.
+adoption_attitude: Pragmatic adopter — Initially resistant but converts quickly once utility is proven.
+primary_motivation: Officer safety and tactical advantage — drones reduce personal risk and provide intelligence that saves lives.
+secondary_motivation: Operational efficiency — clearing calls faster, avoiding unnecessary deployments.
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Variable cellular coverage"
+    impact: "Operates in areas where networks are unreliable — buildings, rural areas, underground. The app must degrade gracefully on poor networks without losing critical functionality."
+  - factor: "Night operations"
+    impact: "Dark mode with high-contrast elements is required to preserve night-adapted vision. Bright UI elements destroy adaptation that takes 20+ minutes to rebuild."
+  - factor: "Outdoor conditions — rain, dust, bright sunlight"
+    impact: "Screen readability is compromised by glare. Touch responsiveness is affected by moisture. UI contrast must be strong enough to read in direct sunlight."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Tactical gloves with conductive fingertips"
+    impact: "Standard for SWAT and patrol in cold conditions. UI must use large touch targets (minimum 44px), gesture-based navigation, and minimal fine-motor interactions."
+  - factor: "One-handed operation while moving"
+    impact: "Often holding a weapon, flashlight, radio, or shield in the other hand. Core actions must be reachable with a single thumb on a phone."
+  - factor: "Wrist-mounted displays (SWAT)"
+    impact: "Tactical wrist displays have tiny screens. Only the most critical information — video feed and basic orientation — can be displayed."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Acute stress — life-threatening situations"
+    impact: "Under acute stress, officers revert to the simplest, most familiar interface. Multi-step workflows get abandoned entirely. Cognitive processing narrows to immediate threats."
+  - factor: "Split attention across multiple information streams"
+    impact: "Simultaneously managing radio comms, physical environment, team coordination, and drone feed. Curated/filtered information beats raw feeds. Information overload causes critical details to be missed."
+  - factor: "Auditory exclusion"
+    impact: "Under extreme stress, hearing narrows. Audio-only alerts may not be perceived. Visual and haptic feedback must supplement any audio cues."
+```
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: DFR drone arrives on scene before ground units
+    goal: Assess threat level, plan approach direction, determine de-escalation opportunity
+    current_pain: Switching between apps for video, map, and team positions adds cognitive load during approach
+    ideal_experience: Single-screen view with video, map overlay, and team positions; audio relay from pilot on radio channel
+
+  - trigger: Active pursuit with suspect fleeing on foot
+    goal: Maintain visual on suspect, coordinate containment perimeter
+    current_pain: Video feed latency or dropout during critical moments; difficulty communicating drone-observed position to ground units
+    ideal_experience: Real-time low-latency overhead tracking with auto-updating suspect marker on shared ATAK map
+```
+
+## Anti-Goals
+
+- Does NOT want to become a drone operator — they consume aerial intelligence, they don't pilot
+- Does NOT want to manage settings, configurations, or accounts during operations
+- Does NOT want information overload — needs filtered, actionable intelligence, not raw data dumps
+
+## Domain Vocabulary
+
+`bird's eye, overhead, eye in the sky, overwatch, containment, perimeter, approach, egress, Alpha/Bravo/Charlie/Delta, hot zone, warm zone, cold zone, staging, TOC, CP, be advised, copy, roger, BOLO, suspect description, last known direction`
+
+## Wish List
+
+Give me video and a map on the same screen — I don't have time to switch apps while I'm on approach. Make it simpler than TAK. I just need to see where the drone is looking and where my team is. If the feed drops, tell me immediately and clearly. It has to work with gloves on, one hand, in the dark.
+</script>
+
+<script type="text/template" id="tpl-playback-viewer">
+# Persona: Playback Viewer
+
+```yaml
+persona_id: playback_viewer
+role: Post-incident footage reviewer / investigative analyst
+classification: CORE USER
+icon: 🔍
+```
+
+## Who is this user?
+
+They were not part of the operation. They come to the footage after the fact — hours, days, or weeks later — with a specific purpose: to find something, verify something, or build a case around something. They are detectives, investigators, prosecutors, legal teams, or internal review boards. The drone footage is evidence or source material, not a tactical tool. Their relationship with DroneSense is transactional and infrequent — they access the system only when a case or review demands it. They do not think of themselves as drone software users; they think of themselves as investigators who need to access a recording.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Evidentiary integrity — provably unmodified footage with full chain of custody"
+    context: "This is non-negotiable. A mishandled piece of footage could compromise a case or expose the agency to liability. SHA-256 hashing at capture, immutable access logs, and clear distinction between original footage and any derivative clips or annotations are the baseline."
+  - weight: 5/5 (Critical)
+    need: "Find the right footage quickly without understanding how the drone program works"
+    context: "They don't know drone operations terminology, flight IDs, or how the program organizes data. They know a date, time, location, or CAD incident number. Search must work on their terms, not the drone program's terms."
+  - weight: 4/5 (High)
+    need: "Precise navigation and scrubbing within footage"
+    context: "They need to find the exact moment that matters — frame-level precision for clipping, annotation, and export. Scrubbing must be fast and accurate, not laggy or imprecise."
+  - weight: 4/5 (High)
+    need: "Court-admissible export with metadata and custody documentation"
+    context: "Footage exported as a raw file with no accompanying metadata, hash verification, or custody documentation is useless for prosecution. The export package must include everything needed for court submission."
+  - weight: 3/5 (Medium)
+    need: "PII protection — redaction of uninvolved individuals"
+    context: "Footage captures bystanders, license plates, and other identifying information of people not involved in the incident. Footage shared outside law enforcement must have PII handled appropriately."
+  - weight: 2/5 (Low)
+    need: "Self-service access scoped to relevant incidents"
+    context: "Currently depends on the drone program admin to retrieve footage. Case-based or request-based access that doesn't require blanket access to all footage would reduce the bottleneck."
+  - weight: 1/5 (Nice to have)
+    need: "Telemetry overlay on playback — gimbal angle, altitude, heading"
+    context: "Civil litigation and use-of-force reviews sometimes require demonstrating exactly what the drone operator could see at a given timestamp."
+```
+
+## User Context
+
+Working at a desk — office, precinct, or legal environment. Not in the field. May access DroneSense rarely, only when a specific case requires it. Often working under deadline pressure from legal proceedings or internal review timelines. Must operate within strict evidentiary and procedural standards. May need to share footage with people entirely outside of DroneSense — prosecutors, courts, oversight bodies, defense attorneys through discovery.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 5/10 — Comfortable with investigative tools and case management software. Not a drone operator. Expects the interface to feel closer to a video review tool than a flight operations platform. Will not invest time learning a complex system for infrequent use.
+risk_tolerance: 3/10 — Extremely risk-averse around procedural errors. A mishandled piece of footage could compromise a case or expose the agency to liability. Every action feels consequential.
+stress_level_during_use: 5/10 — Not acute operational stress, but sustained procedural pressure. Stakes are high even if the pace is slower.
+decision_speed: Days to weeks — Works within investigative and legal timelines.
+adoption_attitude: Skeptical pragmatist — Will use the system if it does what they need. Will route around it if it doesn't.
+primary_motivation: Building a complete, accurate, defensible record — finding the footage that supports or refutes a specific claim.
+secondary_motivation: Procedural integrity — ensuring nothing they do with the footage creates grounds for it to be challenged or thrown out.
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Standard office/desk environment"
+    impact: "No extreme environmental constraints. Standard monitors, keyboard, mouse. Connectivity is reliable. The challenges are procedural, not physical."
+  - factor: "May work in secure facilities with restricted network access"
+    impact: "Some investigative work happens in facilities with controlled internet access or air-gapped networks. Export and offline review capabilities may be needed."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Infrequent system use — may go weeks or months between sessions"
+    impact: "Cannot rely on learned interface familiarity. Every session may feel like the first. The interface must be self-explanatory and not require training or documentation to use effectively."
+  - factor: "Extended footage review sessions"
+    impact: "May spend hours reviewing footage for a single case. Video scrubbing, clipping, and annotation workflows must be efficient and not physically fatiguing."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Procedural anxiety — fear of compromising evidence"
+    impact: "Every action in the system feels consequential. The UI must make it clear what actions are non-destructive and what creates audit entries."
+  - factor: "Unfamiliarity with drone operations concepts"
+    impact: "Does not think in terms of flight IDs, telemetry, or airspace. Thinks in terms of incidents, dates, locations, and case numbers. The interface must translate between these two mental models."
+  - factor: "Deadline pressure from legal proceedings"
+    impact: "Working against court dates, filing deadlines, and internal review timelines. The system must not create bottlenecks — waiting for admin access, slow exports, or unclear search results costs time they don't have."
+```
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Detective assigned to a robbery case needs to review drone footage from the night of the incident
+    goal: Find the relevant footage, identify the suspect's movements, clip and export the key moments for the case file
+    current_pain: No easy way to search footage by incident, time, or location without knowing how the drone program is organized. Must ask the admin to find and export footage on their behalf.
+    ideal_experience: Search by date, time, location, or CAD incident number. Preview results. Scrub with frame-level precision. Clip and export with chain-of-custody metadata intact.
+
+  - trigger: Prosecutor needs footage for trial
+    goal: Receive court-admissible footage with verified integrity and a documented chain of custody
+    current_pain: Footage exported as a raw file with no accompanying metadata, hash verification, or custody documentation
+    ideal_experience: One-click export package including footage, SHA-256 hash, access log, and chain-of-custody documentation formatted for court submission
+```
+
+## Anti-Goals
+
+- Does NOT want to learn drone operations software — they want a video review tool
+- Does NOT want to rely on the drone program admin to retrieve footage on their behalf
+- Does NOT want to take any action that could compromise the evidentiary integrity of footage
+- Does NOT want to export footage that arrives at the prosecutor's office in an unusable or unverifiable format
+
+## Domain Vocabulary
+
+`chain of custody, evidentiary integrity, SHA-256, hash verification, redaction, PII, CJIS, data retention, export, court-admissible, metadata, audit log, use of force, internal affairs, incident timeline, clipping, annotation, case file, discovery, FOIA, public records request, bodycam, corroborating footage`
+
+## Wish List
+
+Let me find the footage I need by searching for a date, time, location, or incident number. Don't make me learn how your drone program is organized. When I clip and export footage, include everything needed for court — the hash, the access log, the chain of custody — in one package. Make it obvious what I can and can't do without affecting the original recording.
+</script>
+
+<script type="text/template" id="tpl-remote-pilot">
+# Persona: Remote Pilot
+
+```yaml
+persona_id: remote_pilot
+role: DFR pilot / remote drone operator from a fixed location
+classification: CORE USER
+icon: 🎮
+```
+
+## Who is this user?
+
+The Remote, or DFR pilot, is in command of the operation of one or more drones flown from a fixed location — typically a control room or real-time crime center. They are specialists. Most have ample experience as a field pilot first. This role is rapidly expanding as docks become more common. Few agencies employ full-time DFR pilots, but that is starting to change. They are the first first responder — their drone arrives on scene 60–90 seconds before anyone else.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Fastest possible launch-to-scene time with minimal UI friction"
+    context: "Every second of pilot decision-making delay directly impacts response time. Benchmarks: Chula Vista 101.8 seconds, Brookhaven under 60 seconds. The launch sequence — from CAD alert to drone airborne and navigating — is the single most time-critical workflow in the product."
+  - weight: 5/5 (Critical)
+    need: "Reliable, low-latency connection with clear automated fallback on link loss"
+    context: "Loss of communication link is the DFR pilot's worst fear. The system must maintain dual-link redundancy (RF + LTE/5G), provide clear link quality indicators, and execute predictable failsafe behavior (RTH/hover) without pilot intervention."
+  - weight: 4/5 (High)
+    need: "Divided attention support — manage video, telemetry, map, radio, CAD, and airspace simultaneously"
+    context: "The remote pilot's cognitive world is defined by divided attention across 4–6 simultaneous information streams. The UI must present these efficiently across 2–4 monitors without requiring constant switching or hunting for information."
+  - weight: 4/5 (High)
+    need: "Persistent, customizable window arrangements that survive sessions"
+    context: "Window layout resets between shifts are a real frustration. Each operator has a preferred arrangement. The system should remember and restore it."
+  - weight: 3/5 (Medium)
+    need: "Automated awareness of airspace, weather, NOTAMs, and TFRs"
+    context: "Manually tracking airspace restrictions during a live response is untenable. The system should surface hazards proactively and block or warn before violations occur."
+  - weight: 2/5 (Low)
+    need: "Auto-captured flight logging with minimal post-flight data entry"
+    context: "After a 12-hour shift with 8 flights, manual entry of mission details is time-consuming and error-prone. The system has the telemetry — it should pre-populate everything."
+  - weight: 1/5 (Nice to have)
+    need: "Multi-drone management from a single interface"
+    context: "Two-to-one and higher ratios are coming. The interface must scale to support supervising multiple aircraft with independent controls per drone."
+```
+
+## User Context
+
+Indoor desktop environment with 2–4 monitors. Likely in a control room, real-time crime center, or dedicated DFR operations room. Input via PS5 controller or keyboard through DroneSense Remote (browser-based). Operating alongside dispatch, CAD systems, 911 audio, and radio channels. The mental challenge: staying spatially safe in a 2D screen-mediated experience of a 3D world, where proprioceptive and peripheral cues are absent. The fatigue pattern is unique — long periods of vigilance punctuated by sudden urgent launches.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 8/10 — Power user comfortable with multi-monitor setups, keyboard shortcuts, and controller configurations. Often the most technically skilled persona. Configures systems but doesn't code.
+risk_tolerance: 6/10 — Manages risk constantly through spatial awareness and airspace compliance. Willing to fly BVLOS with proper waivers but won't bypass SOPs under time pressure.
+stress_level_during_use: 8/10 — Sustained high cognitive load from divided attention across video, telemetry, map, radio, CAD, and airspace. Punctuated by acute spikes during 911 response launches.
+decision_speed: Seconds to minutes — Launch decisions in seconds; flight management in real-time; logging and handoff in minutes.
+adoption_attitude: Early adopter — Self-selected specialist, often the most tech-forward person in the department.
+primary_motivation: Mission impact — being the first responder, providing intelligence that directly saves lives and guides tactical decisions.
+secondary_motivation: Professional identity — DFR pilot is an emerging specialist role with career advancement potential.
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Controlled indoor environment with multiple monitors"
+    impact: "Anti-glare displays, adjustable seating, controlled lighting, noise isolation, and temperature control are all factors. The environment supports extended use but also enables fatigue."
+  - factor: "Co-located with dispatch and other analysts"
+    impact: "Noise from dispatch activity competes with radio audio and system alerts. Noise isolation and distinct audio routing matter for sustained attention."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Extended seated shifts (8–12 hours)"
+    impact: "Ergonomic considerations are real — adjustable seating, monitor height, and input device placement affect sustained performance. Fatigue accumulates physically and mentally over long shifts."
+  - factor: "Controller-based input (PS5 controller or keyboard)"
+    impact: "Fine motor control through a game controller is the primary flight input. UI elements that require precise mouse clicks during active flight create conflict with controller-based workflows."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Loss of proprioceptive and peripheral cues (soda straw effect)"
+    impact: "Unlike field pilots who feel wind and hear the drone, remote pilots experience the 3D world through a narrow camera FOV. This creates enhanced difficulty recognizing anomalous flight events."
+  - factor: "Vigilance decrement and video-blindness"
+    impact: "50% of operators disengaged within 30 minutes in CCTV monitoring research. Video-blindness documented after 20–40 minutes of active monitoring. Trained specialists maintained performance for the first hour."
+  - factor: "Vicarious trauma from high-definition exposure to traumatic scenes"
+    impact: "DFR pilots witness violent crimes, accidents, fires, medical emergencies, and death through close-range camera feeds. The deployed-in-garrison problem — shifting from real-time crisis streaming to normal civilian life within hours — is a significant wellness concern."
+```
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: 911 call dispatched — domestic violence, weapons involved
+    goal: Launch drone, arrive before ground units, provide pre-arrival intelligence
+    current_pain: Launch sequence requires multiple clicks; must manually correlate dispatch address with map; window arrangement resets between shifts
+    ideal_experience: One-click launch from CAD alert with auto-navigation to incident address; persistent window layout per operator; auto-streaming to responding units
+
+  - trigger: Managing 2 simultaneous active incidents with 2 drones
+    goal: Monitor both scenes, provide value to both ground teams, ensure safe flight for both aircraft
+    current_pain: Constantly switching between drone feeds; no unified dashboard for multi-drone telemetry; radio channels compete for attention
+    ideal_experience: Split-screen with independent controls per drone; unified telemetry sidebar; AI-assisted alerts for battery/airspace/obstacle warnings
+```
+
+## Anti-Goals
+
+- Does NOT want to fight the software during an active response — every UI friction costs response time
+- Does NOT want to manually track airspace, weather, and NOTAMs — needs automated awareness
+- Does NOT want to log flights manually when the system already has all the telemetry data
+- Does NOT want to worry about connection loss without clear, predictable automated fallback behavior
+
+## Domain Vocabulary
+
+`launch, RTH, RTL, dock, auto-land, waypoint, orbit, POI, gimbal, FPV, telemetry, AGL, MSL, BVLOS, VLOS, airspace class, NOTAM, TFR, geofence, battery swap, link quality, RSSI, latency, SRT, RTSP, CoT, CAD integration, NG911, call for service, Priority 1/2/3, hot call, cold call`
+
+## Wish List
+
+One-click launch from a CAD alert. I see the call, I click, the drone goes. Don't make me configure anything. Let me set up my window layout once and have it stick between shifts. Auto-log my flights — you have the telemetry, the timestamps, the GPS tracks. When I'm running two drones, give me a split view with independent controls and a unified alert system.
+</script>
+
+<script type="text/template" id="tpl-viewer">
+# Persona: Viewer
+
+```yaml
+persona_id: viewer
+role: Live drone feed consumer / operational participant
+classification: CORE USER
+icon: 👁️
+```
+
+## Who is this user?
+
+A viewer of one or more live drone video feeds who is an active participant in the operation. Many agencies say, "The reason we have a drone program is to provide the video." Could be chiefs, commanders, other agency members, or partner agencies working the same mission. They are part of the operation — the feed is giving them intelligence they are actively using to make decisions. This persona covers live operational viewing only; post-incident footage review is a distinct use case covered by the Playback Viewer persona.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Instant, frictionless access to the live feed"
+    context: "If it takes more than 2 clicks to see the feed, it's too many. During an active incident, any authentication friction, setup steps, or configuration screens mean the feed doesn't get watched. The value of the entire drone program depends on this persona actually seeing the video."
+  - weight: 5/5 (Critical)
+    need: "Curated, contextual information alongside the video — not raw data"
+    context: "Attentional tunneling is the defining cognitive risk. Nearly all incident commanders in research studies failed to detect important situational changes because drone video dominated their attention. The UI must ensure critical non-video information (map overlays, team positions, CAD updates) stays visible."
+  - weight: 4/5 (High)
+    need: "Multi-feed viewing or fast switching without losing context"
+    context: "Multi-agency and multi-drone operations are increasingly common. Watching one feed at a time and losing context when switching is a real limitation during complex incidents."
+  - weight: 3/5 (Medium)
+    need: "Secure, simple sharing with partner agencies and external stakeholders"
+    context: "Mutual aid partners, fire, EMS, and neighboring jurisdictions need access without requiring full account setup. Secure shareable links solve this during live operations."
+  - weight: 2/5 (Low)
+    need: "Quick rewind capability without leaving the live view"
+    context: "Watch commanders monitoring from the station need to dip in and out of feeds. Being able to rewind 60 seconds to catch what was missed avoids asking the pilot to replay."
+  - weight: 1/5 (Nice to have)
+    need: "Tiered access levels for different viewer types"
+    context: "Incident commanders need full tactical overlays. External stakeholders should see a filtered view without sensitive tactical information. Currently it's all-or-nothing."
+```
+
+## User Context
+
+Highly variable. Incident commanders are at field or mobile command posts on laptops, tablets, or large displays. Watch commanders monitor from the station or EOC on desktop monitors. Partner agency responders use whatever device is in hand — phone, laptop, shared screen. RTCC analysts work multi-monitor workstations integrating drone feeds with CAD, 911, fixed cameras, and other intelligence tools. All are part of the operation with active roles.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 3/10 — Highly variable. Ranges from tech-comfortable chiefs to traditional command staff who prefer radio. Typically not digital natives. Expect feeds to work on whatever device is already in hand without additional setup.
+risk_tolerance: 6/10 — Willing to rely on drone intelligence for command decisions. Cautious about sharing feeds outside the operation but not preoccupied with it during an active incident.
+stress_level_during_use: 7/10 — Elevated during active incidents. The defining cognitive risk is attentional tunneling.
+decision_speed: Minutes — Makes resource allocation, escalation/de-escalation, and dispatch decisions based on aerial perspective.
+adoption_attitude: Late majority — Adopts when it becomes standard operational practice, not when it's experimental. Needs to see proven value.
+primary_motivation: Situational awareness — understanding what's happening to make informed command decisions.
+secondary_motivation: Accountability and documentation — aerial footage provides an objective record of the incident.
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Highly variable device and display contexts"
+    impact: "May be viewing on a phone in the field, a laptop in a command vehicle, a desktop at the station, or a large shared display in an EOC. The interface must be responsive across all screen sizes and work without configuration."
+  - factor: "Noisy, chaotic command environments"
+    impact: "Command posts, EOCs, and RTCCs are loud with competing radio traffic, phone calls, and in-person coordination. Audio cues from the interface may be missed entirely."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Non-technical users on unfamiliar devices"
+    impact: "Partner agency responders and external stakeholders may be accessing DroneSense for the first time, on a device they didn't set up, during an active incident. Zero learning curve is the requirement — not low, zero."
+  - factor: "Large display and projection contexts"
+    impact: "Command vehicles and EOCs often project feeds on large screens for group viewing. UI elements must be legible at distance and the layout must make sense when viewed by a room, not just an individual."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Attentional tunneling on video feeds"
+    impact: "Research found nearly all incident commanders failed to detect important situational changes because drone video dominated their attention. The UI must create a visual hierarchy that keeps non-video intelligence visible and accessible."
+  - factor: "Confirmation bias from aerial imagery"
+    impact: "Drone visuals trigger confirmation bias. Design should encourage multiple information sources and avoid interfaces that make the video feed the sole basis for decisions."
+```
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Active shooter notification — DFR drone launches automatically
+    goal: Assess scene, direct responding units, determine entry strategy
+    current_pain: Feed arrives on phone but no context overlays; must mentally correlate video with radio traffic and CAD data
+    ideal_experience: Annotated feed with building overlay, team positions, and auto-generated scene summary pushed alongside video
+
+  - trigger: Multi-agency wildfire response with 3 drones deployed
+    goal: Monitor all feeds, allocate resources, coordinate with fire IC
+    current_pain: Can only watch one feed at a time; switching loses context; partner agency can't access feeds without a full account
+    ideal_experience: Multi-pane view with picture-in-picture, one-click secure share to partner agency via link, persistent map showing all drone positions and coverage areas
+```
+
+## Anti-Goals
+
+- Does NOT want to learn a complex interface — if it takes more than 2 clicks to see a feed, it's too many
+- Does NOT want to accidentally affect drone operations (no flight controls exposed)
+- Does NOT want to be overwhelmed with raw data — needs curated intelligence
+- Does NOT want authentication friction during an active incident
+
+## Domain Vocabulary
+
+`feed, stream, overhead, scene, IC, EOC, CP, TOC, situational awareness, common operating picture, COP, ICS, unified command, mutual aid, interoperability, NIMS, staging, operational period, IAP, CJIS, FOIA, public records request`
+
+## Wish List
+
+Just let me see the feed. No login screens during an incident. No setup. I tap a link and I'm watching. Show me the video with context — where the drone is on a map, where my people are, what the CAD says. Let me watch multiple feeds at once, or at least switch between them without losing what I was looking at. When I share a link with a partner agency, it should just work for them too — no account required.
 </script>
 
 </body>
