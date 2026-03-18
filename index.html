@@ -167,6 +167,13 @@ body{
   .footer{padding:8px 16px;gap:12px;font-size:11px;flex-wrap:wrap}
 }
 
+/* Import modal */
+.import-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.import-card{background:var(--surface-emphasis);border:1px solid var(--border-medium);border-radius:var(--radius-lg);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+.import-card h2{font-size:17px;font-weight:600;font-family:var(--font-display);margin:0}
+.import-drop{border:2px dashed var(--border-data-entry);border-radius:var(--radius-lg);padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.import-drop:hover,.import-drop.drag-over{border-color:var(--brand);background:var(--info-bg)}
+
 .hidden{display:none!important}
 </style>
 </head>
@@ -182,6 +189,7 @@ body{
       </div>
     </div>
     <div class="header-actions">
+      <button class="btn btn-ghost" id="btnImport">Import</button>
       <button class="btn btn-ghost" id="btnPreview">Preview .md</button>
       <button class="btn btn-secondary" id="btnCopy">Copy</button>
       <button class="btn btn-brand" id="btnExport">Export .md</button>
@@ -214,6 +222,34 @@ body{
     <span id="footerScenarios">0 scenarios</span>
     <div style="flex:1"></div>
     <span style="font-size:11px">DroneSense Design System</span>
+  </div>
+</div>
+
+<div id="importModal" class="import-modal hidden">
+  <div class="import-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h2>Import Persona</h2>
+      <button class="btn-remove" id="btnCloseImport" style="font-size:22px">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:18px">Upload a .md file or paste the markdown to load a persona into the editor.</p>
+    <div id="importDropZone" class="import-drop">
+      <input type="file" id="importFile" accept=".md,.txt" style="display:none">
+      <div style="font-size:28px;margin-bottom:6px">📄</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text-primary);margin-bottom:4px">Drop a .md file here</div>
+      <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px">or click to browse</div>
+      <button class="btn btn-secondary sm" id="btnPickFile">Choose File</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;margin:16px 0">
+      <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
+      <span style="font-size:12px;color:var(--text-tertiary)">or paste markdown</span>
+      <div style="flex:1;height:1px;background:var(--border-subtle)"></div>
+    </div>
+    <textarea id="importPaste" placeholder="Paste persona .md content here..." style="width:100%;height:160px;padding:10px 12px;background:transparent;border:1px solid var(--border-data-entry);border-radius:var(--radius);color:var(--text-primary);font-size:12px;font-family:'SF Mono','Fira Code','Consolas',monospace;outline:none;resize:vertical;line-height:1.5;transition:border-color .15s" onfocus="this.style.borderColor='var(--focus-ring)'" onblur="this.style.borderColor='var(--border-data-entry)'"></textarea>
+    <div id="importError" style="display:none;font-size:12px;color:var(--error-content);background:var(--error-bg);border-radius:var(--radius);padding:8px 12px;margin-top:10px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="btn btn-ghost" id="btnCancelImport">Cancel</button>
+      <button class="btn btn-brand" id="btnLoadPersona">Load Persona</button>
+    </div>
   </div>
 </div>
 
@@ -671,6 +707,151 @@ function bindExtras(){
 }
 
 // ============================================================
+// IMPORT / PARSE
+// ============================================================
+function parsePersonaMarkdown(md){
+  const s={
+    name:"",id:"",role:"",classification:"CORE USER",icon:"",
+    description:"",
+    needs:[],
+    context:"",
+    techProficiency:5,techProficiencyNote:"",
+    riskTolerance:5,riskToleranceNote:"",
+    stressLevel:5,stressLevelNote:"",
+    decisionSpeed:"",adoptionAttitude:"",primaryMotivation:"",secondaryMotivation:"",
+    scenarios:[],
+    antiGoals:[],
+    vocabulary:"",wishList:"",
+    humanFactors:{environmental:[],accessibility:[],psychological:[]},
+    humanFactorsCustom:{environmental:"",accessibility:"",psychological:""}
+  };
+
+  // Name
+  const nm=md.match(/^#\s+Persona:\s*(.+)/m);
+  if(nm) s.name=nm[1].trim();
+
+  // Split into h2 sections
+  const sections={};
+  md.split(/\n(?=## )/).forEach(p=>{
+    const m=p.match(/^## ([^\n]+)\n([\s\S]*)/);
+    if(m) sections[m[1].trim()]=m[2];
+  });
+
+  // Helpers
+  const getYaml=c=>{const m=(c||'').match(/```yaml\n([\s\S]*?)```/);return m?m[1]:'';}
+  const plainText=c=>(c||'').replace(/```[\s\S]*?```/g,'').replace(/^>.*$/gm,'').replace(/^_[^_]+_\s*$/gm,'').trim();
+
+  // Identity (first yaml block in the file)
+  const fy=md.match(/```yaml\n([\s\S]*?)```/);
+  if(fy){
+    const y=fy[1];
+    const idM=y.match(/persona_id:\s*(.+)/);if(idM) s.id=idM[1].trim();
+    const roM=y.match(/role:\s*(.+)/);if(roM) s.role=roM[1].trim();
+    const clM=y.match(/classification:\s*([^#\n]+)/);if(clM) s.classification=clM[1].trim();
+    const icM=y.match(/icon:\s*([^#\n]+)/);if(icM) s.icon=icM[1].trim();
+  }
+
+  // Description & Context
+  s.description=plainText(sections["Who is this user?"]);
+  s.context=plainText(sections["User Context"]);
+
+  // Needs
+  const needsYaml=getYaml(sections["Needs & Challenges (Weighted)"]);
+  if(needsYaml){
+    const needRe=/- weight:\s*(\d+)\/5[^\n]*\n\s+need:\s*"([^"]*)"(?:\n\s+context:\s*"([^"]*)")?/g;
+    for(const m of needsYaml.matchAll(needRe)){
+      s.needs.push({weight:parseInt(m[1]),text:m[2],description:m[3]||""});
+    }
+  }
+  if(!s.needs.length) s.needs=[{text:"",weight:3,description:""},{text:"",weight:3,description:""},{text:"",weight:3,description:""}];
+
+  // Profile
+  const profYaml=getYaml(sections["Behavioral & Psychographic Profile"]);
+  if(profYaml){
+    const parseScale=(key)=>{
+      const m=profYaml.match(new RegExp(key+':\\s*(\\d+)\\/10([^\\n]*)'));
+      if(!m) return null;
+      const val=Math.min(10,Math.max(1,parseInt(m[1])));
+      const noteM=m[2].match(/[—–\-]+\s*(.+)/);
+      return{val,note:noteM?noteM[1].trim():""};
+    };
+    const tech=parseScale("tech_proficiency");if(tech){s.techProficiency=tech.val;s.techProficiencyNote=tech.note;}
+    const risk=parseScale("risk_tolerance");if(risk){s.riskTolerance=risk.val;s.riskToleranceNote=risk.note;}
+    const stress=parseScale("stress_level_during_use");if(stress){s.stressLevel=stress.val;s.stressLevelNote=stress.note;}
+    const dsM=profYaml.match(/decision_speed:\s*(.+)/);if(dsM) s.decisionSpeed=dsM[1].trim();
+    const adM=profYaml.match(/adoption_attitude:\s*(.+)/);if(adM) s.adoptionAttitude=adM[1].trim();
+    const m1=profYaml.match(/primary_motivation:\s*(.+)/);if(m1) s.primaryMotivation=m1[1].trim();
+    const m2=profYaml.match(/secondary_motivation:\s*(.+)/);if(m2) s.secondaryMotivation=m2[1].trim();
+  }
+
+  // Human Factors
+  const hfSec=sections["Human Factors & Constraints"]||"";
+  [["environmental_factors","environmental"],["accessibility_factors","accessibility"],["psychological_factors","psychological"]].forEach(([key,sk])=>{
+    const blk=hfSec.match(new RegExp('```yaml\\n'+key+':\\n([\\s\\S]*?)```'));
+    if(!blk) return;
+    const matched=[],custom=[];
+    for(const m of blk[1].matchAll(/- factor:\s*"([^"]+)"/g)){
+      const label=m[1];
+      const known=HUMAN_FACTORS[sk].items.find(i=>i.label.toLowerCase()===label.toLowerCase());
+      if(known) matched.push(known.id);
+      else custom.push(label);
+    }
+    s.humanFactors[sk]=matched;
+    if(custom.length) s.humanFactorsCustom[sk]=custom.join('\n');
+  });
+
+  // Scenarios
+  const scYaml=getYaml(sections["Key Scenarios"]);
+  if(scYaml){
+    const scRe=/- trigger:\s*([^\n]+)\n\s+goal:\s*([^\n]+)\n\s+current_pain:\s*([^\n]+)\n\s+ideal_experience:\s*([^\n]+)/g;
+    for(const m of scYaml.matchAll(scRe)){
+      s.scenarios.push({trigger:m[1].trim(),goal:m[2].trim(),current_pain:m[3].trim(),ideal_experience:m[4].trim()});
+    }
+  }
+  if(!s.scenarios.length) s.scenarios=[{trigger:"",goal:"",current_pain:"",ideal_experience:""}];
+
+  // Anti-Goals
+  const agSec=sections["Anti-Goals"]||"";
+  for(const m of agSec.matchAll(/^-\s+Does NOT want\s+(.+)$/gm)) s.antiGoals.push(m[1].trim());
+  if(!s.antiGoals.length) s.antiGoals=[""];
+
+  // Vocabulary
+  const vocabSec=sections["Domain Vocabulary"]||"";
+  const vM=vocabSec.match(/`([^`]+)`/);
+  if(vM&&vM[1]!=="(none specified)") s.vocabulary=vM[1];
+
+  // Wish List
+  const wishText=plainText(sections["Wish List"]);
+  if(wishText) s.wishList=wishText;
+
+  return s;
+}
+
+function openImportModal(){
+  document.getElementById("importModal").classList.remove("hidden");
+  document.getElementById("importPaste").value="";
+  document.getElementById("importError").style.display="none";
+  document.getElementById("importFile").value="";
+}
+function closeImportModal(){
+  document.getElementById("importModal").classList.add("hidden");
+}
+function showImportError(msg){
+  const el=document.getElementById("importError");
+  el.textContent=msg;el.style.display="block";
+}
+function loadFromText(text){
+  if(!text.trim()){showImportError("No content to load.");return;}
+  if(!text.includes("# Persona:")){showImportError("Doesn't look like a persona file — make sure it starts with '# Persona:'.");return;}
+  const parsed=parsePersonaMarkdown(text);
+  if(!parsed.name){showImportError("Could not read the persona name. Check the file format.");return;}
+  Object.assign(state,parsed);
+  currentTab="basics";
+  closeImportModal();
+  render();
+}
+
+// ============================================================
 // PROMPT TAB
 // ============================================================
 function renderPrompt(){
@@ -770,6 +951,26 @@ function exportMd(){
 // ============================================================
 // INIT
 // ============================================================
+document.getElementById("btnImport").addEventListener("click",openImportModal);
+document.getElementById("btnCloseImport").addEventListener("click",closeImportModal);
+document.getElementById("btnCancelImport").addEventListener("click",closeImportModal);
+document.getElementById("importModal").addEventListener("click",e=>{if(e.target===e.currentTarget)closeImportModal();});
+document.getElementById("btnPickFile").addEventListener("click",()=>document.getElementById("importFile").click());
+document.getElementById("importFile").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=ev=>loadFromText(ev.target.result);r.readAsText(f);
+});
+(()=>{
+  const dz=document.getElementById("importDropZone");
+  dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("drag-over");});
+  dz.addEventListener("dragleave",()=>dz.classList.remove("drag-over"));
+  dz.addEventListener("drop",e=>{
+    e.preventDefault();dz.classList.remove("drag-over");
+    const f=e.dataTransfer.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>loadFromText(ev.target.result);r.readAsText(f);
+  });
+})();
+document.getElementById("btnLoadPersona").addEventListener("click",()=>loadFromText(document.getElementById("importPaste").value));
 document.getElementById("btnPreview").addEventListener("click",togglePreview);
 document.getElementById("btnCopy").addEventListener("click",copyMd);
 document.getElementById("btnCopyPreview").addEventListener("click",copyMd);
