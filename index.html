@@ -1397,32 +1397,28 @@ secondary_motivation: Career advancement — successful program managers become 
 
 ```yaml
 environmental_factors:
-  - factor: "Office/desk environment with standard equipment"
-    impact: "No extreme environmental constraints. Standard monitors, keyboard, mouse. Lighting and connectivity are generally reliable."
-  - factor: "Occasional field presence during major incidents or demonstrations"
-    impact: "May need to pull up dashboards or reports on a laptop or tablet during site visits, community events, or ride-alongs. Mobile access to key metrics matters occasionally."
+  - factor: "High ambient noise"
+    impact: "Precincts and public safety offices have competing radio traffic, conversations, and interruptions throughout the day. Audio-only system alerts are likely to be missed."
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Extended screen time during reporting periods"
-    impact: "During budget cycles and audit prep, spends hours in dashboards and exports. UI must minimize clicks for repetitive tasks and support efficient batch operations."
-  - factor: "Presentation contexts — projecting or screen-sharing reports"
-    impact: "Reports and dashboards may be shown on a projector to city council or shared on a video call with grant reviewers. Visual clarity at distance and in low-contrast projection environments matters."
+  - factor: "Physical fatigue / tremor"
+    impact: "During budget cycles and audit prep, spends hours in dashboards and exports. Accumulated fatigue degrades tolerance for complex, multi-click workflows late in the workday."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Existential program anxiety"
-    impact: "Carries the weight of knowing the program could be cut. This creates a strong emotional response to incomplete data, missed compliance deadlines, and reports that don't tell a compelling story."
-  - factor: "Chronic context-switching across management domains"
-    impact: "Juggles personnel, equipment, compliance, budgets, community relations, and training — often in a single day. The system must not require deep focus to use; quick-in, quick-out interactions are essential."
-  - factor: "Frustration with pilot non-compliance on logging"
-    impact: "Incomplete flight data is a persistent, emotionally charged problem. Every unlogged flight feels like a personal failure because it undermines the reports they depend on."
+  - factor: "External organizational / political pressure"
+    impact: "Carries the weight of budget cycles, leadership scrutiny, and community controversy. Every compliance gap and incomplete report feels like a threat to the program they've built."
+  - factor: "Role-switching / multi-tasking between duties"
+    impact: "Juggles personnel, equipment, compliance, budgets, community relations, and training — often in a single day. The system must support quick-in, quick-out workflows without requiring sustained focus."
+  - factor: "Decision fatigue"
+    impact: "Accumulated decisions across multiple management domains degrade willingness to engage with complex workflows. Administrative tasks in DroneSense hit the most resistance late in the workday."
 ```
 
 ## Key Scenarios
@@ -1520,36 +1516,40 @@ secondary_motivation: Getting the mission done and getting back to their primary
 
 ```yaml
 environmental_factors:
-  - factor: "Outdoor field conditions — sun, rain, wind, dust, temperature extremes"
-    impact: "Screen glare in direct sunlight makes low-contrast UI elements invisible. Rain and dust on screens affect touch accuracy. Cold affects both battery performance and the pilot's dexterity."
-  - factor: "Variable cellular and RF coverage"
-    impact: "Operating in areas where connectivity is unreliable — rural, dense urban, interior. The app must provide clear signal indicators and degrade gracefully. Offline-capable core functions matter."
-  - factor: "High winds, precipitation, GPS denial zones"
-    impact: "Environmental factors that affect flight safety must be surfaced clearly and early — not discovered mid-flight."
+  - factor: "Bright sunlight / glare"
+    impact: "Screen washout in direct sunlight makes low-contrast UI elements invisible. High-contrast UI and outdoor-readable brightness are required."
+  - factor: "Rain / moisture"
+    impact: "Wet screens register phantom touches and reduce grip reliability. Touch targets must be large and tolerant of imprecise input."
+  - factor: "High wind / dust / debris"
+    impact: "Airborne particles obscure screens and make communication difficult. Operational hazard alerts must be visual and prominent."
+  - factor: "Extreme cold"
+    impact: "Reduced finger dexterity, touchscreen responsiveness drops, and battery drain accelerates. Cold weather compounds the gloved-operation challenge."
+  - factor: "Low / intermittent connectivity"
+    impact: "Rural scenes, dense urban environments, and GPS denial zones create unreliable cellular and RF coverage. The app must show signal state clearly and degrade gracefully."
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Juggling controller and separate device simultaneously"
-    impact: "The dual-device problem: holding a remote controller in one hand and managing a separate tablet/phone in the other creates real cognitive tax. Any action requiring two hands on the screen while flying is dangerous."
-  - factor: "Gloved operation in cold or tactical conditions"
-    impact: "Touchscreen interactions must accommodate gloved fingers — large targets, gesture-based navigation, minimal precision tapping."
-  - factor: "Standing, sometimes moving, in variable terrain"
-    impact: "Not seated at a desk. Holding a controller while standing in a field or on a road shoulder. Physical stability is limited. Screen interactions must be simple and forgiving."
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Standard in cold or tactical conditions. UI must use large touch targets, gesture-based navigation, and minimal fine-motor interactions."
+  - factor: "One-handed operation"
+    impact: "The other hand is on the remote controller at all times. All critical in-flight actions must be reachable with a single thumb."
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Holding a controller while managing a separate phone or tablet is the standard dual-device operating condition. Any interaction requiring two hands on the screen during flight is dangerous."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Dual-task cognitive load — primary role and piloting"
-    impact: "Must mentally switch between their primary duty and technically demanding drone piloting under time pressure. Every additional software step compounds this split."
-  - factor: "Equipment readiness anxiety"
-    impact: "Firmware update prompts at launch time are experienced as a crisis. Battery uncertainty and signal degradation are persistent. The app must never add to this anxiety — it must reduce it."
-  - factor: "Software indifference to hostility"
-    impact: "Every additional tap, login screen, confirmation dialog, or configuration setting is experienced as the software getting in the way of real work. Accumulated friction drives them back to OEM apps permanently."
+  - factor: "Role-switching / multi-tasking between duties"
+    impact: "91% of public safety drone pilots serve in collateral roles. Must mentally switch between primary duty and piloting under time pressure. Every software step compounds this split."
+  - factor: "Severe time pressure"
+    impact: "Already in incident mode when they reach for the app. Launch speed is the only metric that matters at that moment. Pre-flight setup steps are experienced as the software failing them."
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Emergency deployments happen under elevated stress where fine motor skills degrade and complex workflows get abandoned. The app must function correctly with minimal input."
 ```
 
 ## Key Scenarios
@@ -1647,36 +1647,38 @@ secondary_motivation: Operational efficiency — clearing calls faster, avoiding
 
 ```yaml
 environmental_factors:
-  - factor: "Variable cellular coverage"
-    impact: "Operates in areas where networks are unreliable — buildings, rural areas, underground. The app must degrade gracefully on poor networks without losing critical functionality."
-  - factor: "Night operations"
-    impact: "Dark mode with high-contrast elements is required to preserve night-adapted vision. Bright UI elements destroy adaptation that takes 20+ minutes to rebuild."
-  - factor: "Outdoor conditions — rain, dust, bright sunlight"
-    impact: "Screen readability is compromised by glare. Touch responsiveness is affected by moisture. UI contrast must be strong enough to read in direct sunlight."
+  - factor: "Low light / darkness"
+    impact: "Night operations are standard. Dark mode with high-contrast elements is required to preserve night-adapted vision. Bright UI elements destroy adaptation that takes 20+ minutes to rebuild."
+  - factor: "Bright sunlight / glare"
+    impact: "Daytime outdoor operations require strong UI contrast and brightness. Screen glare during approach compromises the feed's tactical value."
+  - factor: "Low / intermittent connectivity"
+    impact: "Operates in buildings, underground, and rural areas where cellular coverage fails. The app must degrade gracefully and surface connection state clearly."
+  - factor: "High ambient noise"
+    impact: "Sirens, radio traffic, shouting, and active incident sounds dominate the auditory environment. Audio-only alerts will not be perceived."
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Tactical gloves with conductive fingertips"
-    impact: "Standard for SWAT and patrol in cold conditions. UI must use large touch targets (minimum 44px), gesture-based navigation, and minimal fine-motor interactions."
-  - factor: "One-handed operation while moving"
-    impact: "Often holding a weapon, flashlight, radio, or shield in the other hand. Core actions must be reachable with a single thumb on a phone."
-  - factor: "Wrist-mounted displays (SWAT)"
-    impact: "Tactical wrist displays have tiny screens. Only the most critical information — video feed and basic orientation — can be displayed."
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Standard for SWAT and patrol in cold or tactical conditions. Large touch targets and minimal fine-motor interactions are required."
+  - factor: "One-handed operation"
+    impact: "Other hand typically holding a weapon, flashlight, radio, or shield. All critical actions must be reachable with a single thumb on a phone-sized screen."
+  - factor: "Non-standing position (kneeling, prone, seated)"
+    impact: "Tactical positions change device angle, arm reach, and screen visibility. UI must be readable at oblique angles and operable without full arm extension."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Acute stress — life-threatening situations"
-    impact: "Under acute stress, officers revert to the simplest, most familiar interface. Multi-step workflows get abandoned entirely. Cognitive processing narrows to immediate threats."
-  - factor: "Split attention across multiple information streams"
-    impact: "Simultaneously managing radio comms, physical environment, team coordination, and drone feed. Curated/filtered information beats raw feeds. Information overload causes critical details to be missed."
-  - factor: "Auditory exclusion"
-    impact: "Under extreme stress, hearing narrows. Audio-only alerts may not be perceived. Visual and haptic feedback must supplement any audio cues."
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Under active threat conditions, fine motor skills degrade, tunnel vision occurs, and multi-step workflows get abandoned entirely. Interface must function with the absolute minimum interaction."
+  - factor: "Divided / split attention"
+    impact: "Simultaneously managing radio comms, physical environment, team coordination, and drone feed. The device is a secondary or tertiary attention stream — never the primary focus."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Too many simultaneous data streams cause fixation on one source and critical misses on others. Curated, filtered intelligence beats raw data dumps at the highest cognitive load."
 ```
 
 ## Key Scenarios
@@ -1772,36 +1774,24 @@ secondary_motivation: Procedural integrity — ensuring nothing they do with the
 
 > **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
 
-### 🌦 Environmental Factors
-
-```yaml
-environmental_factors:
-  - factor: "Standard office/desk environment"
-    impact: "No extreme environmental constraints. Standard monitors, keyboard, mouse. Connectivity is reliable. The challenges are procedural, not physical."
-  - factor: "May work in secure facilities with restricted network access"
-    impact: "Some investigative work happens in facilities with controlled internet access or air-gapped networks. Export and offline review capabilities may be needed."
-```
-
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Infrequent system use — may go weeks or months between sessions"
-    impact: "Cannot rely on learned interface familiarity. Every session may feel like the first. The interface must be self-explanatory and not require training or documentation to use effectively."
-  - factor: "Extended footage review sessions"
-    impact: "May spend hours reviewing footage for a single case. Video scrubbing, clipping, and annotation workflows must be efficient and not physically fatiguing."
+  - factor: "Physical fatigue / tremor"
+    impact: "Extended footage review sessions for a single case can span hours. Mouse-intensive precision scrubbing over long periods causes hand fatigue. Clipping and annotation workflows must be efficient and not physically demanding."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Procedural anxiety — fear of compromising evidence"
-    impact: "Every action in the system feels consequential. The UI must make it clear what actions are non-destructive and what creates audit entries."
-  - factor: "Unfamiliarity with drone operations concepts"
-    impact: "Does not think in terms of flight IDs, telemetry, or airspace. Thinks in terms of incidents, dates, locations, and case numbers. The interface must translate between these two mental models."
-  - factor: "Deadline pressure from legal proceedings"
-    impact: "Working against court dates, filing deadlines, and internal review timelines. The system must not create bottlenecks — waiting for admin access, slow exports, or unclear search results costs time they don't have."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Accesses DroneSense only when a specific case demands it — potentially weeks or months between sessions. Cannot rely on learned familiarity. Every session may feel like the first time."
+  - factor: "Severe time pressure"
+    impact: "Working against court dates, filing deadlines, and internal review timelines. Bottlenecks in finding footage, exporting clips, or obtaining custody documentation cost time they don't have."
+  - factor: "External organizational / political pressure"
+    impact: "Every action taken in the system may be subject to legal scrutiny. Awareness that access logs, exports, and any interactions will be reviewed in legal proceedings creates procedural anxiety on every click."
 ```
 
 ## Key Scenarios
@@ -1902,32 +1892,32 @@ secondary_motivation: Professional identity — DFR pilot is an emerging special
 
 ```yaml
 environmental_factors:
-  - factor: "Controlled indoor environment with multiple monitors"
-    impact: "Anti-glare displays, adjustable seating, controlled lighting, noise isolation, and temperature control are all factors. The environment supports extended use but also enables fatigue."
-  - factor: "Co-located with dispatch and other analysts"
-    impact: "Noise from dispatch activity competes with radio audio and system alerts. Noise isolation and distinct audio routing matter for sustained attention."
+  - factor: "High ambient noise"
+    impact: "Co-located with dispatch, 911 audio, and other analysts. Competing audio means important system alerts must visually stand out — audio alone won't reliably reach the pilot."
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Extended seated shifts (8–12 hours)"
-    impact: "Ergonomic considerations are real — adjustable seating, monitor height, and input device placement affect sustained performance. Fatigue accumulates physically and mentally over long shifts."
-  - factor: "Controller-based input (PS5 controller or keyboard)"
-    impact: "Fine motor control through a game controller is the primary flight input. UI elements that require precise mouse clicks during active flight create conflict with controller-based workflows."
+  - factor: "Physical fatigue / tremor"
+    impact: "8–12 hour shifts with sustained high cognitive load accumulate physical fatigue. Fine motor input via game controller degrades as fatigue increases. Long-shift endurance is a real performance factor."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Loss of proprioceptive and peripheral cues (soda straw effect)"
-    impact: "Unlike field pilots who feel wind and hear the drone, remote pilots experience the 3D world through a narrow camera FOV. This creates enhanced difficulty recognizing anomalous flight events."
-  - factor: "Vigilance decrement and video-blindness"
-    impact: "50% of operators disengaged within 30 minutes in CCTV monitoring research. Video-blindness documented after 20–40 minutes of active monitoring. Trained specialists maintained performance for the first hour."
-  - factor: "Vicarious trauma from high-definition exposure to traumatic scenes"
-    impact: "DFR pilots witness violent crimes, accidents, fires, medical emergencies, and death through close-range camera feeds. The deployed-in-garrison problem — shifting from real-time crisis streaming to normal civilian life within hours — is a significant wellness concern."
+  - factor: "Vigilance fatigue / monitoring fatigue"
+    impact: "Video-blindness documented after 20–40 minutes of active monitoring. 50% of operators disengage within 30 minutes. The system must actively surface changes rather than relying on pilot detection."
+  - factor: "Vicarious trauma / disturbing content"
+    impact: "Witnesses violent crimes, accidents, fires, and death through close-range HD feeds every shift. The deployed-in-garrison problem — shifting from crisis streaming to normal civilian life within hours — is a significant wellness concern."
+  - factor: "Divided / split attention"
+    impact: "Simultaneously managing video, telemetry, map, radio, CAD, and airspace across 2–4 monitors. The UI must present these efficiently without requiring constant switching or hunting for information."
+  - factor: "Boredom / monotony between events"
+    impact: "Long vigilance periods punctuated by sudden urgent launches. The shift from monitoring boredom to acute crisis response is instant. Alerting must bridge this gap without creating alert fatigue."
+  - factor: "Severe time pressure"
+    impact: "Response time benchmarks are 60–100 seconds from CAD alert to drone on scene. Every UI step in the launch sequence is measured against these benchmarks. Any friction is directly measurable in outcome quality."
 ```
 
 ## Key Scenarios
@@ -2025,30 +2015,20 @@ secondary_motivation: Accountability and documentation — aerial footage provid
 
 ```yaml
 environmental_factors:
-  - factor: "Highly variable device and display contexts"
-    impact: "May be viewing on a phone in the field, a laptop in a command vehicle, a desktop at the station, or a large shared display in an EOC. The interface must be responsive across all screen sizes and work without configuration."
-  - factor: "Noisy, chaotic command environments"
-    impact: "Command posts, EOCs, and RTCCs are loud with competing radio traffic, phone calls, and in-person coordination. Audio cues from the interface may be missed entirely."
-```
-
-### 🧤 Accessibility & Physical Factors
-
-```yaml
-accessibility_factors:
-  - factor: "Non-technical users on unfamiliar devices"
-    impact: "Partner agency responders and external stakeholders may be accessing DroneSense for the first time, on a device they didn't set up, during an active incident. Zero learning curve is the requirement — not low, zero."
-  - factor: "Large display and projection contexts"
-    impact: "Command vehicles and EOCs often project feeds on large screens for group viewing. UI elements must be legible at distance and the layout must make sense when viewed by a room, not just an individual."
+  - factor: "High ambient noise"
+    impact: "Command posts, EOCs, and RTCCs are loud with competing radio traffic, phone calls, and in-person coordination. Audio alerts from the interface will not be perceived. Visual notifications are the only reliable channel."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Attentional tunneling on video feeds"
-    impact: "Research found nearly all incident commanders failed to detect important situational changes because drone video dominated their attention. The UI must create a visual hierarchy that keeps non-video intelligence visible and accessible."
-  - factor: "Confirmation bias from aerial imagery"
-    impact: "Drone visuals trigger confirmation bias. Design should encourage multiple information sources and avoid interfaces that make the video feed the sole basis for decisions."
+  - factor: "Attentional tunneling on video/screen"
+    impact: "Research found nearly all incident commanders failed to detect important situational changes because drone video dominated their attention. The UI must surface critical non-video intelligence without requiring the viewer to look away from the feed."
+  - factor: "Confirmation bias risk"
+    impact: "Commanders interpret ambiguous drone footage according to existing expectations. Design should present objective data and resist creating interfaces where the video is the sole basis for decisions."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Partner agency responders and infrequent users may access the feed for the first time during an active incident on an unfamiliar device. Zero learning curve is the requirement — not low, zero."
 ```
 
 ## Key Scenarios
