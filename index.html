@@ -1107,34 +1107,74 @@ secondary_motivation: [What else matters to them, in one sentence]
 
 > **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
 
+**IMPORTANT — Human Factors Selection Rules:**
+- You MUST use only the exact factor labels listed under each category below. Do not invent, paraphrase, or combine labels.
+- Only include factors that genuinely apply to this persona. Omit irrelevant ones entirely — do not include factors just to fill space.
+- Write the impact field in the context of this specific persona and product — do not copy the generic descriptions.
+
 ### 🌦 Environmental Factors
+
+Choose only from these exact labels:
+- Extreme heat
+- Extreme cold
+- Rain / moisture
+- Bright sunlight / glare
+- Low light / darkness
+- High wind / dust / debris
+- High ambient noise
+- Confined or cramped space
+- Moving vehicle / vibration
+- Low / intermittent connectivity
+- Altitude / pressure changes
+- Hazardous material environment
 
 ```yaml
 environmental_factors:
-  - factor: "[Environmental condition, e.g. Bright sunlight / glare]"
-    impact: "[How this condition affects interaction with the product]"
-  - factor: "[Another condition if applicable]"
-    impact: "[Impact description]"
+  - factor: "[Exact label from list above]"
+    impact: "[How this condition affects this persona's interaction with PRODUCT NAME]"
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
+Choose only from these exact labels:
+- Wearing gloves (tactical, medical, thermal)
+- One-handed operation
+- Arms encumbered / carrying gear
+- Wearing mask / face shield / SCBA
+- Eye protection / tinted visor
+- Hearing protection / earpieces
+- Non-standing position (kneeling, prone, seated)
+- Limited vision (smoke, fog, NVGs)
+- Physical fatigue / tremor
+- Wet or sweaty hands
+
 ```yaml
 accessibility_factors:
-  - factor: "[Physical constraint, e.g. Wearing gloves (tactical, medical, thermal)]"
-    impact: "[How this limits device interaction]"
-  - factor: "[Another factor if applicable]"
-    impact: "[Impact description]"
+  - factor: "[Exact label from list above]"
+    impact: "[How this limits device interaction for this persona]"
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
+Choose only from these exact labels:
+- Acute stress / life-threatening situation
+- Cognitive overload / information saturation
+- Vigilance fatigue / monitoring fatigue
+- Decision fatigue
+- Severe time pressure
+- Divided / split attention
+- Vicarious trauma / disturbing content
+- Boredom / monotony between events
+- External organizational / political pressure
+- Unfamiliarity with system / infrequent use
+- Role-switching / multi-tasking between duties
+- Confirmation bias risk
+- Attentional tunneling on video/screen
+
 ```yaml
 psychological_factors:
-  - factor: "[Cognitive/psychological condition, e.g. Acute stress / life-threatening situation]"
-    impact: "[How this affects attention, decisions, and error rates]"
-  - factor: "[Another factor if applicable]"
-    impact: "[Impact description]"
+  - factor: "[Exact label from list above]"
+    impact: "[How this affects this persona's attention, decisions, and error rates]"
 ```
 
 ## Key Scenarios
