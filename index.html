@@ -490,6 +490,7 @@ function bindField(id,key,sub){
   const el=document.getElementById(id);
   if(!el) return;
   el.addEventListener("input",()=>{
+    clearTemplate();
     if(sub) state[sub[0]][sub[1]]=el.value;
     else state[key]=el.value;
     updateFooter();updatePreview();
@@ -499,7 +500,7 @@ function bindField(id,key,sub){
 function bindFieldIdx(id,arr,idx,field){
   const el=document.getElementById(id);
   if(!el) return;
-  el.addEventListener("input",()=>{state[arr][idx][field]=el.value;updateFooter();updatePreview();});
+  el.addEventListener("input",()=>{clearTemplate();state[arr][idx][field]=el.value;updateFooter();updatePreview();});
 }
 
 // ============================================================
@@ -534,11 +535,11 @@ function renderBasics(){
 }
 function bindBasics(){
   const nameEl=document.getElementById("f-name");
-  if(nameEl) nameEl.addEventListener("input",()=>{state.name=nameEl.value;state.id=toSnakeCase(nameEl.value);updateFooter();updatePreview();});
+  if(nameEl) nameEl.addEventListener("input",()=>{clearTemplate();state.name=nameEl.value;state.id=toSnakeCase(nameEl.value);updateFooter();updatePreview();});
   bindField("f-role","role");
   bindField("f-icon","icon");bindField("f-desc","description");bindField("f-ctx","context");
   const sel=document.getElementById("f-class");
-  if(sel) sel.addEventListener("change",()=>{state.classification=sel.value;updatePreview();});
+  if(sel) sel.addEventListener("change",()=>{clearTemplate();state.classification=sel.value;updatePreview();});
 }
 
 function renderNeeds(){
@@ -564,11 +565,11 @@ function bindNeeds(){
     bindFieldIdx(`n-text-${i}`,"needs",i,"text");
     bindFieldIdx(`n-desc-${i}`,"needs",i,"description");
     const sl=document.getElementById(`n-w-${i}`);
-    if(sl) sl.addEventListener("input",()=>{state.needs[i].weight=Number(sl.value);render();});
+    if(sl) sl.addEventListener("input",()=>{activeTemplate=null;state.needs[i].weight=Number(sl.value);render();});
   });
-  document.querySelectorAll("[data-rm-need]").forEach(b=>b.addEventListener("click",()=>{state.needs.splice(Number(b.dataset.rmNeed),1);render();}));
+  document.querySelectorAll("[data-rm-need]").forEach(b=>b.addEventListener("click",()=>{activeTemplate=null;state.needs.splice(Number(b.dataset.rmNeed),1);render();}));
   const ab=document.getElementById("addNeed");
-  if(ab) ab.addEventListener("click",()=>{state.needs.push({text:"",weight:3,description:""});render();});
+  if(ab) ab.addEventListener("click",()=>{activeTemplate=null;state.needs.push({text:"",weight:3,description:""});render();});
 }
 
 function renderProfile(){
@@ -600,7 +601,7 @@ function renderProfile(){
 function bindProfile(){
   ["techProficiency","riskTolerance","stressLevel"].forEach(k=>{
     const sl=document.getElementById(`p-${k}`);
-    if(sl) sl.addEventListener("input",()=>{state[k]=Number(sl.value);render();});
+    if(sl) sl.addEventListener("input",()=>{activeTemplate=null;state[k]=Number(sl.value);render();});
     const note=k.replace(/([A-Z])/,"$1")+"Note";
   });
   bindField("p-techProficiencyNote","techProficiencyNote");
@@ -654,7 +655,7 @@ function bindHuman(){
       const[ck,id]=el.dataset.fcheck.split("|");
       const cur=state.humanFactors[ck]||[];
       state.humanFactors[ck]=cur.includes(id)?cur.filter(x=>x!==id):[...cur,id];
-      render();
+      activeTemplate=null;render();
     });
   });
   document.querySelectorAll("[data-finfo]").forEach(el=>{
@@ -666,7 +667,7 @@ function bindHuman(){
   });
   Object.keys(HUMAN_FACTORS).forEach(ck=>{
     const el=document.getElementById(`hf-custom-${ck}`);
-    if(el) el.addEventListener("input",()=>{state.humanFactorsCustom[ck]=el.value;updatePreview();});
+    if(el) el.addEventListener("input",()=>{clearTemplate();state.humanFactorsCustom[ck]=el.value;updatePreview();});
   });
 }
 
@@ -694,9 +695,9 @@ function bindScenarios(){
       bindFieldIdx(`s-${ids[fi]}-${i}`,"scenarios",i,f);
     });
   });
-  document.querySelectorAll("[data-rm-sc]").forEach(b=>b.addEventListener("click",()=>{state.scenarios.splice(Number(b.dataset.rmSc),1);render();}));
+  document.querySelectorAll("[data-rm-sc]").forEach(b=>b.addEventListener("click",()=>{activeTemplate=null;state.scenarios.splice(Number(b.dataset.rmSc),1);render();}));
   const ab=document.getElementById("addScenario");
-  if(ab) ab.addEventListener("click",()=>{state.scenarios.push({trigger:"",goal:"",current_pain:"",ideal_experience:""});render();});
+  if(ab) ab.addEventListener("click",()=>{activeTemplate=null;state.scenarios.push({trigger:"",goal:"",current_pain:"",ideal_experience:""});render();});
 }
 
 function renderExtras(){
@@ -720,17 +721,22 @@ function renderExtras(){
 function bindExtras(){
   state.antiGoals.forEach((a,i)=>{
     const el=document.getElementById(`ag-${i}`);
-    if(el) el.addEventListener("input",()=>{state.antiGoals[i]=el.value;updateFooter();updatePreview();});
+    if(el) el.addEventListener("input",()=>{clearTemplate();state.antiGoals[i]=el.value;updateFooter();updatePreview();});
   });
-  document.querySelectorAll("[data-rm-ag]").forEach(b=>b.addEventListener("click",()=>{state.antiGoals.splice(Number(b.dataset.rmAg),1);render();}));
+  document.querySelectorAll("[data-rm-ag]").forEach(b=>b.addEventListener("click",()=>{activeTemplate=null;state.antiGoals.splice(Number(b.dataset.rmAg),1);render();}));
   const ab=document.getElementById("addAG");
-  if(ab) ab.addEventListener("click",()=>{state.antiGoals.push("");render();});
+  if(ab) ab.addEventListener("click",()=>{activeTemplate=null;state.antiGoals.push("");render();});
   bindField("f-vocab","vocabulary");bindField("f-wish","wishList");
 }
 
 // ============================================================
 // TEMPLATES
 // ============================================================
+function clearTemplate(){
+  if(!activeTemplate) return;
+  activeTemplate=null;
+  renderSidebar();
+}
 function hasActiveWork(){
   return !!(state.name||state.description||state.context||
     state.needs.some(n=>n.text)||state.scenarios.some(s=>s.trigger)||
