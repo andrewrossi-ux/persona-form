@@ -260,3 +260,4 @@ scenarios:
 ## Wish List
 
 I want to press one button and be in the air. Stop asking me to confirm things I always confirm. When I land, just save everything automatically — I'm not going to type notes at a fire scene. And if I haven't used the app in three weeks, I shouldn't have to re-figure out where anything is. It should feel like I never left.
+4
