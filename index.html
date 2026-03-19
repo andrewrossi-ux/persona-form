@@ -71,6 +71,19 @@ body{
 .preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .preview-header h3{font-size:13px;font-weight:600;color:var(--text-tertiary);font-family:var(--font-display);letter-spacing:.5px;text-transform:uppercase}
 .preview-pre{font-size:11px;color:var(--text-secondary);white-space:pre-wrap;word-break:break-word;font-family:'SF Mono','Fira Code','Consolas',monospace;line-height:1.6;background:var(--surface-medium);border-radius:10px;padding:16px;border:1px solid var(--border-subtle);margin:0}
+.preview-view-tabs{display:flex;background:var(--surface-medium);border-radius:6px;padding:2px;gap:2px}
+.pvt-btn{padding:3px 12px;background:none;border:none;color:var(--text-tertiary);font-size:12px;font-weight:500;cursor:pointer;border-radius:4px;font-family:var(--font-sans);transition:all .15s}
+.pvt-btn.active{background:var(--surface-strong);color:var(--text-primary)}
+.md-rendered{font-size:13px;line-height:1.6;color:var(--text-secondary)}
+.md-rendered .md-h1{font-size:17px;font-weight:700;color:var(--text-primary);font-family:var(--font-display);margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border-subtle)}
+.md-rendered .md-h2{font-size:12px;font-weight:700;color:var(--brand);font-family:var(--font-display);margin:16px 0 5px;text-transform:uppercase;letter-spacing:.6px}
+.md-rendered .md-h3{font-size:13px;font-weight:600;color:var(--text-primary);margin:10px 0 4px}
+.md-rendered .md-bq{border-left:3px solid var(--brand);padding:8px 12px;background:var(--surface-medium);border-radius:0 6px 6px 0;margin:8px 0;color:var(--text-secondary);font-size:12px}
+.md-rendered pre.md-code{font-size:11px;background:var(--surface-medium);border:1px solid var(--border-subtle);border-radius:8px;padding:12px;margin:8px 0;overflow-x:auto;font-family:'SF Mono','Fira Code','Consolas',monospace;line-height:1.5;color:var(--text-secondary);white-space:pre-wrap}
+.md-rendered code{font-size:11px;background:var(--surface-strong);padding:1px 5px;border-radius:4px;font-family:'SF Mono','Fira Code','Consolas',monospace;color:var(--brand)}
+.md-rendered .md-li{padding:2px 0;position:relative;color:var(--text-secondary);display:flex;align-items:baseline;gap:6px}
+.md-rendered .md-li::before{content:"·";color:var(--border-ui);flex-shrink:0}
+.md-rendered .md-p{margin:3px 0;color:var(--text-secondary)}
 
 .footer{position:fixed;bottom:0;left:0;right:0;background:var(--surface-emphasis);border-top:1px solid var(--border-subtle);padding:8px 24px;display:flex;gap:20px;align-items:center;font-size:12px;color:var(--text-tertiary);z-index:10}
 .footer-sep{color:var(--border-strong)}
@@ -217,9 +230,16 @@ body{
     <div class="preview-panel hidden" id="previewPanel">
       <div class="preview-header">
         <h3>Markdown Preview</h3>
-        <button class="btn btn-ghost sm" id="btnCopyPreview">Copy</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="preview-view-tabs">
+            <button class="pvt-btn active" id="pvtRaw" onclick="setPreviewMode('raw')">Raw</button>
+            <button class="pvt-btn" id="pvtRendered" onclick="setPreviewMode('rendered')">Rendered</button>
+          </div>
+          <button class="btn btn-ghost sm" id="btnCopyPreview">Copy</button>
+        </div>
       </div>
       <pre class="preview-pre" id="previewPre"></pre>
+      <div class="md-rendered hidden" id="previewRendered"></div>
     </div>
   </div>
 
@@ -351,6 +371,7 @@ let state = {
 
 let currentTab = "basics";
 let showPreview = false;
+let previewMode = "raw";
 let expandedFactors = {};
 let activeTemplate = null;
 
@@ -976,9 +997,49 @@ function render(){
   updatePreview();
 }
 
+function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inlineMd(t){
+  return escapeHtml(t)
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>');
+}
+function renderMarkdown(md){
+  const lines=md.split('\n');
+  let html='',inCode=false,codeLines=[];
+  for(const line of lines){
+    if(line.startsWith('```')){
+      if(inCode){html+=`<pre class="md-code"><code>${codeLines.join('\n')}</code></pre>`;codeLines=[];inCode=false;}
+      else inCode=true;
+      continue;
+    }
+    if(inCode){codeLines.push(escapeHtml(line));continue;}
+    if(line.startsWith('### ')) html+=`<h3 class="md-h3">${inlineMd(line.slice(4))}</h3>`;
+    else if(line.startsWith('## ')) html+=`<h2 class="md-h2">${inlineMd(line.slice(3))}</h2>`;
+    else if(line.startsWith('# ')) html+=`<h1 class="md-h1">${inlineMd(line.slice(2))}</h1>`;
+    else if(line.startsWith('> ')) html+=`<blockquote class="md-bq">${inlineMd(line.slice(2))}</blockquote>`;
+    else if(/^\s*-\s/.test(line)){
+      const ind=line.match(/^(\s*)/)[1].length;
+      html+=`<div class="md-li" style="margin-left:${Math.min(ind,6)*10}px">${inlineMd(line.replace(/^\s*-\s/,''))}</div>`;
+    }
+    else if(line.trim()==='') html+='<div style="height:6px"></div>';
+    else html+=`<p class="md-p">${inlineMd(line)}</p>`;
+  }
+  return html;
+}
+function setPreviewMode(mode){
+  previewMode=mode;
+  document.getElementById('pvtRaw').classList.toggle('active',mode==='raw');
+  document.getElementById('pvtRendered').classList.toggle('active',mode==='rendered');
+  document.getElementById('previewPre').classList.toggle('hidden',mode!=='raw');
+  document.getElementById('previewRendered').classList.toggle('hidden',mode!=='rendered');
+  updatePreview();
+}
 function updatePreview(){
   if(!showPreview) return;
-  document.getElementById("previewPre").textContent=generateMarkdown();
+  const md=generateMarkdown();
+  document.getElementById("previewPre").textContent=md;
+  document.getElementById("previewRendered").innerHTML=renderMarkdown(md);
 }
 
 function updateFooter(){
