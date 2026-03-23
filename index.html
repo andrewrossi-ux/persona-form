@@ -502,7 +502,7 @@ function esc(s){const d=document.createElement("div");d.textContent=s;return d.i
 function fieldHTML(id,label,value,opts={}){
   const{multi,small,placeholder=""}=opts;
   const cls=small?"field small":"field";
-  const tag=multi?`<textarea id="${id}" rows="3" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`
+  const tag=multi?`<textarea id="${id}" rows="4" placeholder="${esc(placeholder)}">${esc(value)}</textarea>`
     :`<input id="${id}" value="${esc(value)}" placeholder="${esc(placeholder)}">`;
   return `<div class="${cls}">${label?`<label>${esc(label)}</label>`:""}${tag}</div>`;
 }
@@ -568,14 +568,14 @@ function renderNeeds(){
   state.needs.forEach((n,i)=>{
     html+=`<div class="card card-need" style="border-color:${WEIGHT_COLORS[n.weight]}22">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:10px">
-        <div style="flex:1">${fieldHTML(`n-text-${i}`,`Need #${i+1}`,n.text,{small:true,placeholder:"e.g. Reliable launch with zero friction"})}</div>
+        <div style="flex:1">${fieldHTML(`n-text-${i}`,`Need #${i+1}`,n.text,{small:true,multi:true,placeholder:"e.g. Reliable launch with zero friction"})}</div>
         ${state.needs.length>1?`<button class="btn-remove" data-rm-need="${i}">×</button>`:""}
       </div>
       <div class="weight-row">
         <input type="range" min="1" max="5" step="1" value="${n.weight}" id="n-w-${i}" style="accent-color:${WEIGHT_COLORS[n.weight]}">
         <span class="weight-badge" style="color:${WEIGHT_COLORS[n.weight]};background:${WEIGHT_BG[n.weight]}">${n.weight}/5 — ${WEIGHT_LABELS[n.weight]}</span>
       </div>
-      <div style="margin-top:10px">${fieldHTML(`n-desc-${i}`,"",n.description,{small:true,placeholder:"Optional: context or rationale..."})}</div>
+      <div style="margin-top:10px">${fieldHTML(`n-desc-${i}`,"",n.description,{small:true,multi:true,placeholder:"Optional: context or rationale..."})}</div>
     </div>`;
   });
   html+=`<button class="btn btn-secondary sm" id="addNeed">+ Add Need</button></div>`;
@@ -607,15 +607,15 @@ function renderProfile(){
         <input type="range" min="1" max="10" value="${state[s.key]}" id="p-${s.key}" style="accent-color:var(--brand)">
         <span class="profile-value">${state[s.key]}/10</span>
       </div>
-      ${fieldHTML(`p-${s.note}`,"",state[s.note],{small:true,placeholder:"Brief note explaining this rating..."})}
+      ${fieldHTML(`p-${s.note}`,"",state[s.note],{small:true,multi:true,placeholder:"Brief note explaining this rating..."})}
     </div>`;
   });
   html+=`<div class="grid-2" style="margin-top:8px">
-    ${fieldHTML("p-speed","Decision Speed",state.decisionSpeed,{placeholder:"e.g. Seconds to minutes"})}
-    ${fieldHTML("p-adopt","Adoption Attitude",state.adoptionAttitude,{placeholder:"e.g. Early adopter, Late majority"})}
+    ${fieldHTML("p-speed","Decision Speed",state.decisionSpeed,{multi:true,placeholder:"e.g. Seconds to minutes"})}
+    ${fieldHTML("p-adopt","Adoption Attitude",state.adoptionAttitude,{multi:true,placeholder:"e.g. Early adopter, Late majority"})}
   </div>
-  ${fieldHTML("p-mot1","Primary Motivation",state.primaryMotivation,{placeholder:"What drives them most?"})}
-  ${fieldHTML("p-mot2","Secondary Motivation",state.secondaryMotivation,{placeholder:"What else matters?"})}
+  ${fieldHTML("p-mot1","Primary Motivation",state.primaryMotivation,{multi:true,placeholder:"What drives them most?"})}
+  ${fieldHTML("p-mot2","Secondary Motivation",state.secondaryMotivation,{multi:true,placeholder:"What else matters?"})}
   </div>`;
   return html;
 }
@@ -700,10 +700,10 @@ function renderScenarios(){
         <span class="scenario-badge">Scenario ${i+1}</span>
         ${state.scenarios.length>1?`<button class="btn-remove" data-rm-sc="${i}">×</button>`:""}
       </div>
-      ${fieldHTML(`s-trig-${i}`,"Trigger",s.trigger,{small:true,placeholder:"What event or condition starts this?"})}
-      ${fieldHTML(`s-goal-${i}`,"Goal",s.goal,{small:true,placeholder:"What is the user trying to accomplish?"})}
-      ${fieldHTML(`s-pain-${i}`,"Current Pain",s.current_pain,{small:true,placeholder:"What makes this hard today?"})}
-      ${fieldHTML(`s-ideal-${i}`,"Ideal Experience",s.ideal_experience,{small:true,placeholder:"What would the perfect solution look like?"})}
+      ${fieldHTML(`s-trig-${i}`,"Trigger",s.trigger,{small:true,multi:true,placeholder:"What event or condition starts this?"})}
+      ${fieldHTML(`s-goal-${i}`,"Goal",s.goal,{small:true,multi:true,placeholder:"What is the user trying to accomplish?"})}
+      ${fieldHTML(`s-pain-${i}`,"Current Pain",s.current_pain,{small:true,multi:true,placeholder:"What makes this hard today?"})}
+      ${fieldHTML(`s-ideal-${i}`,"Ideal Experience",s.ideal_experience,{small:true,multi:true,placeholder:"What would the perfect solution look like?"})}
     </div>`;
   });
   html+=`<button class="btn btn-secondary sm" id="addScenario">+ Add Scenario</button></div>`;
@@ -726,7 +726,7 @@ function renderExtras(){
   state.antiGoals.forEach((a,i)=>{
     html+=`<div class="anti-goal-row">
       <span class="anti-goal-prefix">Does NOT want</span>
-      <div style="flex:1">${fieldHTML(`ag-${i}`,"",a,{small:true,placeholder:"e.g. to learn a complex interface"})}</div>
+      <div style="flex:1">${fieldHTML(`ag-${i}`,"",a,{small:true,multi:true,placeholder:"e.g. to learn a complex interface"})}</div>
       ${state.antiGoals.length>1?`<button class="btn-remove" data-rm-ag="${i}">×</button>`:""}
     </div>`;
   });
