@@ -5,7 +5,6 @@ persona_id: viewer
 role: Live drone feed consumer / operational participant
 classification: CORE USER
 icon: 👁️
-version: 3
 ```
 
 ## Who is this user?
@@ -35,60 +34,54 @@ weighted_needs:
     context: "Watch commanders monitoring from the station need to dip in and out of feeds. Being able to rewind 60 seconds to catch what was missed avoids asking the pilot to replay."
   - weight: 1/5 (Nice to have)
     need: "Tiered access levels for different viewer types"
-    context: "Incident commanders need full tactical overlays. External stakeholders (mayors, county officials) should see a filtered view without sensitive tactical information. Currently it's all-or-nothing."
+    context: "Incident commanders need full tactical overlays. External stakeholders should see a filtered view without sensitive tactical information. Currently it's all-or-nothing."
 ```
 
 ## User Context
 
-Highly variable. Incident commanders are at field or mobile command posts on laptops, tablets, or large displays. Watch commanders monitor from the station or EOC on desktop monitors. Partner agency responders use whatever device is in hand — phone, laptop, shared screen. RTCC analysts work multi-monitor workstations integrating drone feeds with CAD, 911, fixed cameras, and other intelligence tools. All are part of the operation with active roles. The feed serves that role.
+Highly variable. Incident commanders are at field or mobile command posts on laptops, tablets, or large displays. Watch commanders monitor from the station or EOC on desktop monitors. Partner agency responders use whatever device is in hand — phone, laptop, shared screen. RTCC analysts work multi-monitor workstations integrating drone feeds with CAD, 911, fixed cameras, and other intelligence tools. All are part of the operation with active roles.
 
 ## Behavioral & Psychographic Profile
 
 ```yaml
-tech_proficiency: 3/10 — Highly variable. Ranges from tech-comfortable chiefs to traditional command staff who rose through operational ranks and prefer radio. Typically not digital natives. Expect feeds to work on whatever device is already in hand without additional setup.
+tech_proficiency: 3/10 — Highly variable. Ranges from tech-comfortable chiefs to traditional command staff who prefer radio. Typically not digital natives. Expect feeds to work on whatever device is already in hand without additional setup.
 risk_tolerance: 6/10 — Willing to rely on drone intelligence for command decisions. Cautious about sharing feeds outside the operation but not preoccupied with it during an active incident.
 stress_level_during_use: 7/10 — Elevated during active incidents. The defining cognitive risk is attentional tunneling.
-decision_speed: Minutes — Makes resource allocation, escalation/de-escalation, and dispatch decisions based on aerial perspective. Not as fast as ground team but faster than admin.
+decision_speed: Minutes — Makes resource allocation, escalation/de-escalation, and dispatch decisions based on aerial perspective.
 adoption_attitude: Late majority — Adopts when it becomes standard operational practice, not when it's experimental. Needs to see proven value.
 primary_motivation: Situational awareness — understanding what's happening to make informed command decisions.
 secondary_motivation: Accountability and documentation — aerial footage provides an objective record of the incident.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
 ```
 
 ## Human Factors & Constraints
 
 > **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
 
-### 🌦 Environmental Factors
-
-```yaml
-environmental_factors:
-  - factor: "Highly variable device and display contexts"
-    impact: "May be viewing on a phone in the field, a laptop in a command vehicle, a desktop at the station, or a large shared display in an EOC. The interface must be responsive across all screen sizes and work without configuration."
-  - factor: "Noisy, chaotic command environments"
-    impact: "Command posts, EOCs, and RTCCs are loud with competing radio traffic, phone calls, and in-person coordination. Audio cues from the interface may be missed entirely."
-```
-
-### 🧤 Accessibility & Physical Factors
-
-```yaml
-accessibility_factors:
-  - factor: "Non-technical users on unfamiliar devices"
-    impact: "Partner agency responders and external stakeholders may be accessing DroneSense for the first time, on a device they didn't set up, during an active incident. Zero learning curve is the requirement — not low, zero."
-  - factor: "Large display and projection contexts"
-    impact: "Command vehicles and EOCs often project feeds on large screens for group viewing. UI elements must be legible at distance and the layout must make sense when viewed by a room, not just an individual."
-```
-
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Attentional tunneling on video feeds"
-    impact: "Research found nearly all incident commanders failed to detect important situational changes from traditional data sources because drone video dominated their attention. The UI must create a visual hierarchy that keeps non-video intelligence visible and accessible — it cannot be video-only."
-  - factor: "Confirmation bias from aerial imagery"
-    impact: "Drone visuals trigger confirmation bias — the 2021 Kabul strike resulted from confirmation bias when interpreting hours of drone footage. Design should encourage multiple information sources and avoid interfaces that make the video feed the sole basis for decisions."
-  - factor: "Vicarious trauma from repeated exposure (RTCC analysts)"
-    impact: "Analysts watching drone feeds witness traumatic scenes — violent crimes, accidents, death. Research confirms physiological stress responses and intrusive thoughts. Platform design should consider session time tracking, rotation support, and wellness awareness."
+  - factor: "Attentional tunneling on video/screen"
+    impact: "Drone video dominates attention — nearly all incident commanders in studies failed to detect important changes from other data sources because the video feed captured their focus."
+  - factor: "Confirmation bias risk"
+    impact: "Users interpreting ambiguous imagery (video feeds, thermal) tend to see what they expect. Design should present objective data and avoid reinforcing initial assumptions."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Collateral-duty users may not touch the system for weeks between uses. Interface must be re-learnable in seconds, not require recall of training. Progressive disclosure over feature density."
+  - factor: "Vigilance fatigue / monitoring fatigue"
+    impact: "Extended monitoring causes 'video-blindness' after 20-40 minutes. Detection rates drop to 50%. 50% of operators disengage within 30 minutes of a 90-minute monitoring task."
 ```
+
 
 ## Key Scenarios
 
@@ -103,11 +96,6 @@ scenarios:
     goal: Monitor all feeds, allocate resources, coordinate with fire IC
     current_pain: Can only watch one feed at a time; switching loses context; partner agency can't access feeds without a full account
     ideal_experience: Multi-pane view with picture-in-picture, one-click secure share to partner agency via link, persistent map showing all drone positions and coverage areas
-
-  - trigger: Watch commander monitoring from the station during a developing situation
-    goal: Stay informed without being pulled into the field; make resource decisions if needed
-    current_pain: No easy way to dip in and out of a feed without losing context on what was missed
-    ideal_experience: Persistent feed with timeline markers for key moments; ability to quickly rewind 60 seconds without leaving the live view
 ```
 
 ## Anti-Goals
@@ -119,11 +107,8 @@ scenarios:
 
 ## Domain Vocabulary
 
-`feed, stream, overhead, scene, IC (incident commander), EOC, CP, TOC, situational awareness, common operating picture, COP, ICS, unified command, mutual aid, interoperability, NIMS, staging, operational period, IAP (incident action plan), CJIS, FOIA, public records request`
+`feed, stream, overhead, scene, IC, EOC, CP, TOC, situational awareness, common operating picture, COP, ICS, unified command, mutual aid, interoperability, NIMS, staging, operational period, IAP, CJIS, FOIA, public records request`
 
 ## Wish List
 
-- Just let me see the feed. No login screens during an incident. No setup. I tap a link and I'm watching.
-- Show me the video with context — where the drone is on a map, where my people are, what the CAD says. Don't make me hold all of that in my head.
-- Let me watch multiple feeds at once, or at least switch between them without losing what I was looking at.
-- When I share a link with a partner agency, it should just work for them too — no account required.
+Just let me see the feed. No login screens during an incident. No setup. I tap a link and I'm watching. Show me the video with context — where the drone is on a map, where my people are, what the CAD says. Let me watch multiple feeds at once, or at least switch between them without losing what I was looking at. When I share a link with a partner agency, it should just work for them too — no account required.
