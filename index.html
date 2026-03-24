@@ -1042,6 +1042,22 @@ function parsePersonaMarkdown(md){
   const wishText=plainText(sections["Wish List"]);
   if(wishText) s.wishList=wishText;
 
+  // Feature Usage
+  const fuYaml=getYaml(sections["Feature Usage"]);
+  if(fuYaml){
+    const freqLabelToNum={"Rarely":1,"Occasionally":2,"Frequently":3,"Every day":4};
+    for(const m of fuYaml.matchAll(/- feature:\s*"([^"]+)"\s*\n\s+frequency:\s*"([^"]+)"/g)){
+      const label=m[1];const freqStr=m[2];
+      const freq=freqLabelToNum[freqStr]||3;
+      let found=null;
+      for(const group of RED_ROUTES){
+        const item=group.items.find(i=>i.label.toLowerCase()===label.toLowerCase());
+        if(item){found=item;break;}
+      }
+      if(found) s.features[found.id]={selected:true,frequency:freq};
+    }
+  }
+
   return s;
 }
 
