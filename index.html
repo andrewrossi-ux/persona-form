@@ -292,6 +292,60 @@ body{
 const WEIGHT_LABELS={1:"Nice to have",2:"Low",3:"Medium",4:"High",5:"Critical"};
 const WEIGHT_COLORS={1:"#636f87",2:"#52b4ff",3:"#fff4c4",4:"#fb923c",5:"#e24040"};
 const WEIGHT_BG={1:"#21252e",2:"#0b1532",3:"#605905",4:"#7b1a18",5:"#320d0b"};
+const FREQ_LABELS={1:"Rarely",2:"Occasionally",3:"Frequently",4:"Every day"};
+const FREQ_COLORS={1:"#636f87",2:"#52b4ff",3:"#fb923c",4:"#e24040"};
+const FREQ_BG={1:"#21252e",2:"#0b1532",3:"#7b3a10",4:"#320d0b"};
+const RED_ROUTES=[
+  {category:"Used Everyday",baseFreq:4,items:[
+    {id:"fly_drone",label:"Fly the drone"},
+    {id:"monitor_ops_view",label:"Monitor Ops View — w SPOI & markers"},
+    {id:"deconflict_airspace",label:"Deconflict the airspace"},
+    {id:"watch_video_feeds",label:"Watch the video feeds"},
+    {id:"stream_video",label:"Stream Video (Visual Labs)"},
+    {id:"log_drone_flight",label:"Log drone flight"},
+    {id:"edit_flight_log",label:"Edit data for flight log"},
+    {id:"notify_send_video",label:"Notify/send video to people (MVL)"},
+  ]},
+  {category:"Used Frequently",baseFreq:3,items:[
+    {id:"preflight_checklist",label:"Pre-flight prep/checklist"},
+    {id:"laanc_auth",label:"LAANC / airspace authorization"},
+    {id:"mark_map",label:"Mark the map"},
+    {id:"monitor_stream",label:"Monitor stream connection/quality"},
+    {id:"screenshare_video",label:"Screenshare drone video"},
+    {id:"report_program",label:"Report on the program"},
+    {id:"report_aar",label:"Report/AAR on a mission/event"},
+    {id:"manage_users",label:"Create and Manage users"},
+  ]},
+  {category:"Used Occasionally",baseFreq:2,items:[
+    {id:"check_weather",label:"Check weather"},
+    {id:"get_ds_support",label:"Get DS Support"},
+    {id:"save_upload_video",label:"Save/Upload drone video/pics"},
+    {id:"create_mission",label:"Create New Mission"},
+    {id:"check_battery",label:"Check battery health"},
+    {id:"custom_imagery",label:"Build/Import custom imagery layer"},
+    {id:"cleanup_map",label:"Cleanup stale map features"},
+    {id:"stream_device_msat",label:"Stream device video (MSAT)"},
+    {id:"annotate_map",label:"Annotate map before a mission"},
+    {id:"import_export_kml",label:"Import/Export a KML"},
+    {id:"log_maintenance",label:"Log drone maintenance"},
+    {id:"update_firmware",label:"Update apps + firmware"},
+    {id:"pilot_currency",label:"Pilot currency report"},
+    {id:"frat",label:"Complete Flight Risk Assessment (FRAT)"},
+    {id:"public_dashboard",label:"Manage Public Dashboard"},
+    {id:"drop_item",label:"Drop item from drone"},
+  ]},
+  {category:"Used Rarely",baseFreq:1,items:[
+    {id:"pilot_credentials",label:"Add/Edit Pilot Credentials"},
+    {id:"drone_kit",label:"Create/Edit Drone Kit"},
+    {id:"drone_licenses",label:"Manage drone licenses"},
+    {id:"create_checklists",label:"Create checklists"},
+    {id:"file_notam",label:"File NOTAM"},
+    {id:"records_request",label:"Respond to a records request"},
+    {id:"log_incident",label:"Log incident"},
+    {id:"upload_document",label:"Upload document"},
+    {id:"replay_flight",label:"Replay flight log"},
+  ]},
+];
 const CLASSIFICATIONS=["CORE USER","SECONDARY USER","TERTIARY USER","STAKEHOLDER"];
 
 const HUMAN_FACTORS={
@@ -366,7 +420,8 @@ let state = {
   antiGoals:[""],
   vocabulary:"",wishList:"",
   humanFactors:{environmental:[],accessibility:[],psychological:[]},
-  humanFactorsCustom:{environmental:"",accessibility:"",psychological:""}
+  humanFactorsCustom:{environmental:"",accessibility:"",psychological:""},
+  features:{}
 };
 
 let currentTab = "basics";
@@ -391,6 +446,7 @@ const TABS=[
   {key:"basics",label:"Basics",icon:"◉"},
   {key:"needs",label:"Needs & Weights",icon:"◈"},
   {key:"profile",label:"Profile",icon:"◎"},
+  {key:"features",label:"Features",icon:"◆"},
   {key:"human",label:"Human Factors",icon:"⚠"},
   {key:"scenarios",label:"Scenarios",icon:"▶"},
   {key:"extras",label:"Anti-Goals & More",icon:"◇"},
@@ -400,10 +456,12 @@ const TABS=[
 function renderTabs(){
   const bar=document.getElementById("tabBar");
   const totalFactors=Object.values(state.humanFactors).reduce((s,a)=>s+a.length,0);
+  const totalFeatures=Object.values(state.features).filter(f=>f.selected).length;
   bar.innerHTML=TABS.map(t=>{
     const active=currentTab===t.key;
     let badge="";
     if(t.key==="human"&&totalFactors>0) badge=`<span class="tab-badge">${totalFactors}</span>`;
+    if(t.key==="features"&&totalFeatures>0) badge=`<span class="tab-badge">${totalFeatures}</span>`;
     return `<button class="tab-btn${active?" active":""}" data-tab="${t.key}"><span class="tab-icon">${t.icon}</span>${t.label}${badge}</button>`;
   }).join("");
   bar.querySelectorAll(".tab-btn").forEach(b=>b.addEventListener("click",()=>{currentTab=b.dataset.tab;render();}));
@@ -433,6 +491,20 @@ function generateMarkdown(){
       if(cust) cust.split("\n").filter(l=>l.trim()).forEach(l=>{hf+=`  - factor: "${l.trim()}"\n    impact: "User-specified additional factor"\n`;});
       hf+=`\`\`\`\n\n`;
     }
+  }
+
+  let fu="";
+  const selFeats=[];
+  RED_ROUTES.forEach(group=>{
+    group.items.forEach(item=>{
+      const feat=p.features[item.id];
+      if(feat&&feat.selected) selFeats.push({label:item.label,freq:FREQ_LABELS[feat.frequency||group.baseFreq],baseline:group.category});
+    });
+  });
+  if(selFeats.length){
+    fu=`\n## Feature Usage\n\n> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.\n\n\`\`\`yaml\nfeature_usage:\n`;
+    selFeats.forEach(f=>{fu+=`  - feature: "${f.label}"\n    frequency: "${f.freq}"\n    red_routes_baseline: "${f.baseline}"\n`;});
+    fu+=`\`\`\`\n`;
   }
 
   return `# Persona: ${p.name||"Unnamed Persona"}
@@ -472,7 +544,7 @@ adoption_attitude: ${p.adoptionAttitude||"TBD"}
 primary_motivation: ${p.primaryMotivation||"TBD"}
 secondary_motivation: ${p.secondaryMotivation||"TBD"}
 \`\`\`
-${hf}
+${fu}${hf}
 ## Key Scenarios
 
 \`\`\`yaml
