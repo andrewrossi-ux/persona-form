@@ -5,7 +5,6 @@ persona_id: field_pilot
 role: On-scene drone operator (collateral duty)
 classification: CORE USER
 icon: 🛸
-version: 3
 ```
 
 ## Who is this user?
@@ -19,7 +18,7 @@ They fly drones to enhance their primary job. Field Pilots have assigned equipme
 ```yaml
 weighted_needs:
   - weight: 5/5 (Critical)
-    need: "Zero friction at launch — no logins, no confirmations, no configuration"
+    need: "Zero friction at launch — very little effort required to get in the application and go flying"
     context: "Every click that isn't flying is a click that's in the way. Login screens, firmware check prompts, confirmation dialogs, and configuration settings at launch time are all experienced as the software failing them. They're already in incident mode when they reach for the app."
   - weight: 5/5 (Critical)
     need: "Absolute reliability — the app must work every single time"
@@ -46,12 +45,59 @@ Operating in the field — on scene at incidents, sometimes from a vehicle. Dron
 
 ```yaml
 tech_proficiency: 7/10 — Self-selected technology enthusiast who volunteered for drone duty. Comfortable with drone hardware and OEM apps. But their comfort is with the drone, not the software platform. DroneSense is infrastructure — invisible when working, infuriating when not.
-risk_tolerance: 7/10 — Comfortable flying in challenging conditions within SOPs. Won't bypass regulations but pushes boundaries when lives are at stake. "Two is one, one is none" redundancy mindset.
+risk_tolerance: 7/10 — Comfortable flying in challenging conditions within SOPs. Won't bypass regulations but pushes boundaries when lives are at stake.
 stress_level_during_use: 7/10 — Elevated from dual-task demand (primary role + piloting) compounded by environmental conditions, equipment anxiety, and time pressure.
 decision_speed: Seconds to minutes — Pre-flight assessment in minutes; in-flight tactical decisions in seconds.
 adoption_attitude: Early adopter of drones — not of software. Will resist any workflow that adds steps to a process they consider already solved.
-primary_motivation: Saving lives and making a difference — "I think we make a pretty big difference on just about everything we're flying on."
+primary_motivation: Saving lives and making a difference — the drone is a tool that makes their primary job more effective and safer.
 secondary_motivation: Getting the mission done and getting back to their primary role.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Fly the drone"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Deconflict the airspace"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Pre-flight prep/checklist"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "LAANC / airspace authorization"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Mark the map"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Monitor stream connection/quality"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Check weather"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Check battery health"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Stream device video (MSAT)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Complete Flight Risk Assessment (FRAT)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Drop item from drone"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Add/Edit Pilot Credentials"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Log incident"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
 ```
 
 ## Human Factors & Constraints
@@ -62,37 +108,48 @@ secondary_motivation: Getting the mission done and getting back to their primary
 
 ```yaml
 environmental_factors:
-  - factor: "Outdoor field conditions — sun, rain, wind, dust, temperature extremes"
-    impact: "Screen glare in direct sunlight makes low-contrast UI elements invisible. Rain and dust on screens affect touch accuracy. Cold affects both battery performance and the pilot's dexterity."
-  - factor: "Variable cellular and RF coverage"
-    impact: "Operating in areas where connectivity is unreliable — rural, dense urban, interior. The app must provide clear signal indicators and degrade gracefully. Offline-capable core functions matter."
-  - factor: "High winds, precipitation, GPS denial zones"
-    impact: "Environmental factors that affect flight safety (wind triggering auto-RTH, GPS denial indoors) must be surfaced clearly and early — not discovered mid-flight."
+  - factor: "Bright sunlight / glare"
+    impact: "Screen washout makes feeds and text unreadable. Forces users to shield screens, reducing grip stability. Requires high-contrast or outdoor-mode UI."
+  - factor: "Rain / moisture"
+    impact: "Wet screens register phantom touches, grip on devices becomes unreliable. Water ingress risk on non-ruggedized hardware."
+  - factor: "High wind / dust / debris"
+    impact: "Airborne particles obscure screens, make voice communication difficult, increase drone operational risk. Fine particles infiltrate device ports."
+  - factor: "Extreme cold"
+    impact: "Reduced finger dexterity, touchscreen responsiveness drops, battery drain accelerates significantly. Breath fog on close screens."
+  - factor: "Low / intermittent connectivity"
+    impact: "Cellular dead zones, saturated networks at large incidents. App must degrade gracefully — queue actions, cache data, show connection state clearly."
+  - factor: "Extreme heat"
+    impact: "Prolonged sun exposure, hot surfaces, sweat on hands/screens. Devices may overheat and throttle. Screen readability degrades. Dehydration affects cognition."
+  - factor: "Low light / darkness"
+    impact: "Dark mode essential to preserve night-adapted vision. Bright UI elements cause temporary blindness and compromise tactical awareness."
+  - factor: "Moving vehicle / vibration"
+    impact: "Bouncing, vibration, and sudden stops degrade fine motor control. Touchscreen accuracy drops. Motion sickness risk with prolonged screen use."
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Juggling controller + separate device simultaneously"
-    impact: "The dual-device problem: holding a remote controller in one hand and managing a separate tablet/phone for ATAK or DroneSense in the other creates real cognitive tax. Any action requiring two hands on the screen while flying is dangerous."
-  - factor: "Gloved operation in cold or tactical conditions"
-    impact: "Touchscreen interactions must accommodate gloved fingers — large targets, gesture-based navigation, minimal precision tapping."
-  - factor: "Standing, sometimes moving, in variable terrain"
-    impact: "Not seated at a desk. Holding a controller while standing in a field, on a road shoulder, or next to a fire truck. Physical stability is limited. Screen interactions must be simple and forgiving."
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Reduced finger precision, touchscreen may not register through non-conductive gloves. Requires large touch targets (min 44px), gesture-based nav, and minimal fine-motor interactions."
+  - factor: "One-handed operation"
+    impact: "Other hand holding radio, flashlight, weapon, door handle, or patient. All critical actions must be reachable with a single thumb on a phone-sized screen."
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Body armor, duty belt, medical kit, fire hose — limits arm range of motion and how the device can be held or positioned."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Dual-task cognitive load — primary role + piloting"
-    impact: "Must mentally switch between their primary duty and technically demanding drone piloting under time pressure. Fire departments face acute staffing conflicts — removing an operational firefighter to operate a UAS is a hard sell. Every additional software step compounds this split."
-  - factor: "Equipment readiness anxiety"
-    impact: "Firmware update prompts at launch time are experienced as a crisis. Battery uncertainty, signal degradation, and 'will this work right now?' anxiety are persistent. The app must never add to this anxiety — it must reduce it."
-  - factor: "Software indifference to hostility"
-    impact: "Every additional tap, login screen, confirmation dialog, or configuration setting is experienced as the software getting in the way of real work. Accumulated friction drives them back to OEM apps permanently."
+  - factor: "Role-switching / multi-tasking between duties"
+    impact: "91% of drone pilots serve in collateral roles. Must mentally switch between primary duty and drone operation under time pressure. Context-switching is cognitively expensive."
+  - factor: "Severe time pressure"
+    impact: "Seconds matter — response time benchmarks are 60-100 seconds. Every UI step that adds delay is directly measurable in outcome quality. Users will skip anything non-essential."
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Fight-or-flight response active. Fine motor skills degrade, tunnel vision occurs, auditory exclusion is common. Users revert to simplest, most familiar interface patterns. Multi-step workflows get abandoned."
 ```
+
 
 ## Key Scenarios
 
@@ -103,11 +160,6 @@ scenarios:
     current_pain: App requires login, firmware check delays launch by 2–3 minutes, separate thermal/visual toggle is clunky with gloves on
     ideal_experience: Instant launch flow with no friction — no login, no confirmation screens, no configuration. Auto-stream to IC on OpsHub. One-tap thermal/visual toggle with large touch targets.
 
-  - trigger: Traffic accident reconstruction on highway
-    goal: Capture orthomosaic mapping data for investigators
-    current_pain: Mapping mission setup in DroneSense Pilot lacks feature parity with DJI GS Pro; must switch to OEM app
-    ideal_experience: Full automated mapping mission workflow within Pilot app matching OEM capability — no reason to reach for a different tool
-
   - trigger: End of shift after 3 flights
     goal: Be done. Go home.
     current_pain: Expected to log flight data manually — either in the field on a small screen with poor connectivity, or later at a computer. Both feel like homework after the real work is done.
@@ -116,22 +168,14 @@ scenarios:
 
 ## Anti-Goals
 
-- Does NOT think about DroneSense — it should be invisible infrastructure
-- Does NOT want any friction at launch: no logins, no confirmations, no configuration
+- Does NOT want any friction at launch
 - Does NOT want to return to a computer after a flight to complete, annotate, or review records
 - Does NOT want to be a software tester — the app must work reliably every time
-- Does NOT want to choose between DroneSense and OEM apps for missing features
-- Does NOT want firmware updates or blockers at launch time
 
 ## Domain Vocabulary
 
-`pre-flight, post-flight, checklist, RTH, RTL, Mode 2, gimbal, thermal, visual, EO (electro-optical), IR (infrared), orthomosaic, 3D mapping, waypoint mission, orbit, POI, AGL, obstacle avoidance, signal strength, RSSI, link loss, failsafe, geofence, TFR, airspace, Part 107, VLOS, spotter, VO (visual observer), PIC (pilot in command), CRM (crew resource management), battery health, firmware, calibration, compass cal, IMU`
+`pre-flight, post-flight, checklist, RTH, RTL, Mode 2, gimbal, thermal, visual, EO, IR, orthomosaic, waypoint mission, orbit, POI, AGL, obstacle avoidance, signal strength, RSSI, link loss, failsafe, geofence, TFR, airspace, Part 107, VLOS, spotter, VO, PIC, battery health, firmware, calibration`
 
 ## Wish List
 
-- Just work. Every time. I grab the controller, I open the app, I'm flying. No steps in between.
-- Don't make me log flights after the fact. You know what I flew, when, where, and for how long. Capture it automatically.
-- Match what the DJI app does. If I have to switch to another app because yours can't do mapping or thermal toggle, I'm not coming back.
-- Tell me about connectivity problems before they become problems. Show me signal strength clearly. Don't let me find out the hard way.
-
-> **Design Implication:** Every screen this persona encounters should pass a single test: does this help them fly, or does it get in the way? If the answer is the latter — eliminate it, automate it, or move it somewhere they never have to see it.
+Just work. Every time. I grab the controller, I open the app, I'm flying. No steps in between. Don't make me log flights after the fact. You know what I flew, when, where, and for how long — capture it automatically. Match what the DJI app does. Tell me about connectivity problems before they become problems.
