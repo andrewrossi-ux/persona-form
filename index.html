@@ -253,7 +253,7 @@ body{
     <span class="footer-sep">|</span>
     <span id="footerScenarios">0 scenarios</span>
     <div style="flex:1"></div>
-    <span style="font-size:11px">DroneSense Design System</span>
+ 
   </div>
 </div>
 
@@ -704,6 +704,67 @@ function bindProfile(){
   bindField("p-mot1","primaryMotivation");bindField("p-mot2","secondaryMotivation");
 }
 
+function renderFeatures(){
+  let html=`<div style="margin-bottom:24px"><h3 style="font-size:20px;font-weight:600;font-family:var(--font-display);margin:0 0 4px">Feature Usage</h3>
+    <p style="font-size:13px;color:var(--text-tertiary);margin:0;line-height:1.5">Select the features this persona uses and tune how frequently — relative to the red routes baseline for all users. Unselected features are assumed unused by this persona.</p></div>`;
+  RED_ROUTES.forEach(group=>{
+    const bc=FREQ_COLORS[group.baseFreq];
+    const bb=FREQ_BG[group.baseFreq];
+    const selInGroup=group.items.filter(it=>(state.features[it.id]||{}).selected).length;
+    html+=`<div class="factor-group">
+      <div class="factor-group-header">
+        <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);background:${bb};color:${bc};letter-spacing:.5px">${group.category.toUpperCase()}</span>
+        ${selInGroup?`<span class="factor-count" style="background:${bb};color:${bc}">${selInGroup} selected</span>`:""}
+      </div>
+      <div class="factor-grid">`;
+    group.items.forEach(item=>{
+      const feat=state.features[item.id]||{};
+      const on=!!feat.selected;
+      const freq=feat.frequency||group.baseFreq;
+      const fc=FREQ_COLORS[freq];
+      const fb=FREQ_BG[freq];
+      html+=`<div class="factor-item${on?" checked":""}" style="${on?`border-color:${fc}44;background:${fb}22;`:""}cursor:pointer" data-feat-toggle="${item.id}" data-base-freq="${group.baseFreq}">
+        <div class="factor-row">
+          <div class="factor-check${on?" on":""}" style="color:${bc}">
+            ${on?'<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="#060609" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':""}
+          </div>
+          <span class="factor-label" style="font-weight:${on?600:400};color:${on?"var(--text-primary)":"var(--text-secondary)"}">${item.label}</span>
+        </div>`;
+      if(on){
+        html+=`<div style="margin-top:8px;display:flex;gap:4px;flex-wrap:wrap">`;
+        [1,2,3,4].forEach(f=>{
+          const act=freq===f;
+          html+=`<button class="btn sm" style="font-size:11px;padding:3px 9px;border-radius:var(--radius-pill);${act?`background:${FREQ_BG[f]};color:${FREQ_COLORS[f]};border:1px solid ${FREQ_COLORS[f]}55;font-weight:600`:"background:transparent;color:var(--text-tertiary);border:1px solid var(--border-subtle)"}" data-feat-freq="${item.id}|${f}">${FREQ_LABELS[f]}</button>`;
+        });
+        html+=`</div>`;
+      }
+      html+=`</div>`;
+    });
+    html+=`</div></div>`;
+  });
+  return html;
+}
+function bindFeatures(){
+  document.querySelectorAll("[data-feat-toggle]").forEach(el=>{
+    el.addEventListener("click",e=>{
+      if(e.target.closest("[data-feat-freq]")) return;
+      const id=el.dataset.featToggle;
+      const cur=state.features[id]||{};
+      const baseFreq=Number(el.dataset.baseFreq);
+      state.features[id]={selected:!cur.selected,frequency:cur.frequency||baseFreq};
+      render();
+    });
+  });
+  document.querySelectorAll("[data-feat-freq]").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.stopPropagation();
+      const[id,freq]=el.dataset.featFreq.split("|");
+      state.features[id]={selected:true,frequency:Number(freq)};
+      render();
+    });
+  });
+}
+
 function renderHuman(){
   let html=`<div style="margin-bottom:24px"><h3 style="font-size:20px;font-weight:600;font-family:var(--font-display);margin:0 0 4px">Human Factors & Constraints</h3>
     <p style="font-size:13px;color:var(--text-tertiary);margin:0;line-height:1.5">Select the conditions this persona operates under. These become hard constraints in the exported .md — the AI will treat them as expected operating conditions, not edge cases.</p></div>`;
@@ -879,7 +940,8 @@ function parsePersonaMarkdown(md){
     antiGoals:[],
     vocabulary:"",wishList:"",
     humanFactors:{environmental:[],accessibility:[],psychological:[]},
-    humanFactorsCustom:{environmental:"",accessibility:"",psychological:""}
+    humanFactorsCustom:{environmental:"",accessibility:"",psychological:""},
+    features:{}
   };
 
   // Name
@@ -1061,9 +1123,9 @@ function render(){
   renderTabs();
   renderSidebar();
   const content=document.getElementById("content");
-  const renderers={basics:renderBasics,needs:renderNeeds,profile:renderProfile,human:renderHuman,scenarios:renderScenarios,extras:renderExtras,prompt:renderPrompt};
+  const renderers={basics:renderBasics,needs:renderNeeds,profile:renderProfile,features:renderFeatures,human:renderHuman,scenarios:renderScenarios,extras:renderExtras,prompt:renderPrompt};
   content.innerHTML=renderers[currentTab]();
-  const binders={basics:bindBasics,needs:bindNeeds,profile:bindProfile,human:bindHuman,scenarios:bindScenarios,extras:bindExtras,prompt:bindPrompt};
+  const binders={basics:bindBasics,needs:bindNeeds,profile:bindProfile,features:bindFeatures,human:bindHuman,scenarios:bindScenarios,extras:bindExtras,prompt:bindPrompt};
   binders[currentTab]();
   updateFooter();
   updatePreview();
