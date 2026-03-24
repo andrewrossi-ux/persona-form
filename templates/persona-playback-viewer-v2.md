@@ -1,16 +1,15 @@
-# Persona: Playback Viewer
+# Persona: Ground Team
 
 ```yaml
-persona_id: playback_viewer
-role: Post-incident footage reviewer / investigative analyst
+persona_id: ground_team
+role: Field operator consuming aerial intelligence during active operations
 classification: CORE USER
-icon: 🔍
-version: 2
+icon: 🥾
 ```
 
 ## Who is this user?
 
-They were not part of the operation. They come to the footage after the fact — hours, days, or weeks later — with a specific purpose: to find something, verify something, or build a case around something. They are detectives, investigators, prosecutors, legal teams, or internal review boards. The drone footage is evidence or source material, not a tactical tool. Their relationship with DroneSense is transactional and infrequent — they access the system only when a case or review demands it. They do not think of themselves as drone software users; they think of themselves as investigators who need to access a recording.
+Boots on the ground, taking action from what they see on the drone feed. SWAT operators, patrol officers on approach, suspect trackers, evidence collectors, perimeter teams. They come from inside the agency or from coordinating agencies on a shared mission. They don't fly — they consume the aerial picture and translate it into ground-level decisions in seconds.
 
 ## Needs & Challenges (Weighted)
 
@@ -19,42 +18,53 @@ They were not part of the operation. They come to the footage after the fact —
 ```yaml
 weighted_needs:
   - weight: 5/5 (Critical)
-    need: "Evidentiary integrity — provably unmodified footage with full chain of custody"
-    context: "This is non-negotiable. A mishandled piece of footage could compromise a case or expose the agency to liability. SHA-256 hashing at capture, immutable access logs, and clear distinction between original footage and any derivative clips or annotations are the baseline."
+    need: "Low-latency, reliable video feed with contextual map overlay"
+    context: "Any delay >1–2 seconds makes tactical decisions unreliable. The feed is their primary intelligence source — if it lags or drops, they lose the advantage the drone was launched to provide."
   - weight: 5/5 (Critical)
-    need: "Find the right footage quickly without understanding how the drone program works"
-    context: "They don't know drone operations terminology, flight IDs, or how the program organizes data. They know a date, time, location, or CAD incident number. Search must work on their terms, not the drone program's terms."
+    need: "Works under extreme stress with minimal interaction"
+    context: "Under acute stress, fine motor skills degrade, tunnel vision occurs, and multi-step workflows get abandoned. The UI must function with gloved hands, split attention, and zero tolerance for complexity."
   - weight: 4/5 (High)
-    need: "Precise navigation and scrubbing within footage"
-    context: "They need to find the exact moment that matters — frame-level precision for clipping, annotation, and export. Scrubbing must be fast and accurate, not laggy or imprecise."
-  - weight: 4/5 (High)
-    need: "Court-admissible export with metadata and custody documentation"
-    context: "Footage exported as a raw file with no accompanying metadata, hash verification, or custody documentation is useless for prosecution. The export package must include everything needed for court submission."
+    need: "Location context — where the drone is looking, where teammates are, where threats are"
+    context: "The bird's eye view is only useful if they can orient it to their position on the ground. Markers, team positions, and building-side callouts (Alpha/Bravo/Charlie/Delta) turn raw video into actionable intelligence."
   - weight: 3/5 (Medium)
-    need: "PII protection — redaction of uninvolved individuals"
-    context: "Footage captures bystanders, license plates, and other identifying information of people not involved in the incident. Footage shared outside law enforcement — in court, through FOIA — must have PII handled appropriately."
+    need: "Integration with existing communication stack (radio, ATAK, MDT)"
+    context: "They won't switch tools during an incident. DroneSense must work within or alongside the tools already on their belt and in their vehicle — especially ATAK and radio."
   - weight: 2/5 (Low)
-    need: "Self-service access scoped to relevant incidents"
-    context: "Currently depends on the drone program admin to retrieve footage. Case-based or request-based access that doesn't require blanket access to all footage would reduce the bottleneck."
+    need: "Simultaneous video and map view on a single screen"
+    context: "Switching between apps for video, map, and team positions adds cognitive load during approach. A combined view reduces the number of things competing for attention."
   - weight: 1/5 (Nice to have)
-    need: "Telemetry overlay on playback — gimbal angle, altitude, heading"
-    context: "Civil litigation and use-of-force reviews sometimes require demonstrating exactly what the drone operator could see at a given timestamp. Camera orientation and field of view context adds forensic value."
+    need: "Simpler alternative to TAK for agencies without it"
+    context: "Some agencies want TAK-like situational awareness without the complexity of TAK itself. A lightweight common operating picture would serve smaller teams."
 ```
 
 ## User Context
 
-Working at a desk — office, precinct, or legal environment. Not in the field. May access DroneSense rarely, only when a specific case requires it. Often working under deadline pressure from legal proceedings or internal review timelines. Must operate within strict evidentiary and procedural standards. May need to share footage with people entirely outside of DroneSense — prosecutors, courts, oversight bodies, defense attorneys through discovery.
+Operating in high-pressure, high-consequence environments — active pursuits, SWAT entries, structure fires, search operations. Phone users are mobile, on foot. Tablet users may be stationed in a vehicle or mobile command center. Connectivity is variable — cellular coverage gaps are common in the field. Everything they do with DroneSense happens alongside radio comms, physical environment awareness, and team coordination.
 
 ## Behavioral & Psychographic Profile
 
 ```yaml
-tech_proficiency: 5/10 — Comfortable with investigative tools and case management software. Not a drone operator and doesn't need to be. Expects the interface to feel closer to a video review tool than a flight operations platform. Will not invest time learning a complex system for infrequent use.
-risk_tolerance: 3/10 — Extremely risk-averse around procedural errors. A mishandled piece of footage could compromise a case or expose the agency to liability. Every action feels consequential.
-stress_level_during_use: 5/10 — Not acute operational stress, but sustained procedural pressure. Stakes are high even if the pace is slower.
-decision_speed: Days to weeks — Works within investigative and legal timelines. Not making split-second decisions but needs precision and accuracy over speed.
-adoption_attitude: Skeptical pragmatist — Will use the system if it does what they need. Will route around it (requesting exports from admins, using other tools) if it doesn't.
-primary_motivation: Building a complete, accurate, defensible record — finding the footage that supports or refutes a specific claim.
-secondary_motivation: Procedural integrity — ensuring nothing they do with the footage creates grounds for it to be challenged or thrown out.
+tech_proficiency: 5/10 — Competent with issued devices (MDT, tablet, phone) but not power users. Will abandon complex workflows under stress.
+risk_tolerance: 8/10 — Comfortable operating in high-risk environments. Pragmatic about drone reliability; sees drones as risk-reduction tools.
+stress_level_during_use: 9/10 — Highest acute cognitive load of any persona. Fine motor skills degrade, tunnel vision occurs, auditory exclusion is common during active incidents.
+decision_speed: Seconds — OODA loop runs in seconds. DFR feeds arrive 60–90 seconds before officers; tactical decisions happen immediately.
+adoption_attitude: Pragmatic adopter — Initially resistant but converts quickly once utility is proven.
+primary_motivation: Officer safety and tactical advantage — drones reduce personal risk and provide intelligence that saves lives.
+secondary_motivation: Operational efficiency — clearing calls faster, avoiding unnecessary deployments.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Monitor Ops View — w SPOI & markers"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Watch the video feeds"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
 ```
 
 ## Human Factors & Constraints
@@ -65,74 +75,72 @@ secondary_motivation: Procedural integrity — ensuring nothing they do with the
 
 ```yaml
 environmental_factors:
-  - factor: "Standard office/desk environment"
-    impact: "No extreme environmental constraints. Standard monitors, keyboard, mouse. Connectivity is reliable. The challenges are procedural, not physical."
-  - factor: "May work in secure facilities with restricted network access"
-    impact: "Some investigative work happens in facilities with controlled internet access or air-gapped networks. Export and offline review capabilities may be needed."
+  - factor: "Low light / darkness"
+    impact: "Dark mode essential to preserve night-adapted vision. Bright UI elements cause temporary blindness and compromise tactical awareness."
+  - factor: "Bright sunlight / glare"
+    impact: "Screen washout makes feeds and text unreadable. Forces users to shield screens, reducing grip stability. Requires high-contrast or outdoor-mode UI."
+  - factor: "Low / intermittent connectivity"
+    impact: "Cellular dead zones, saturated networks at large incidents. App must degrade gracefully — queue actions, cache data, show connection state clearly."
+  - factor: "High ambient noise"
+    impact: "Sirens, engines, crowds, gunfire — audio alerts become useless. Radio comms require earpieces. Voice-based interactions fail entirely."
+  - factor: "Extreme cold"
+    impact: "Reduced finger dexterity, touchscreen responsiveness drops, battery drain accelerates significantly. Breath fog on close screens."
+  - factor: "Extreme heat"
+    impact: "Prolonged sun exposure, hot surfaces, sweat on hands/screens. Devices may overheat and throttle. Screen readability degrades. Dehydration affects cognition."
 ```
 
 ### 🧤 Accessibility & Physical Factors
 
 ```yaml
 accessibility_factors:
-  - factor: "Infrequent system use — may go weeks or months between sessions"
-    impact: "Cannot rely on learned interface familiarity. Every session may feel like the first. The interface must be self-explanatory and not require training or documentation to use effectively."
-  - factor: "Extended footage review sessions"
-    impact: "May spend hours reviewing footage for a single case. Video scrubbing, clipping, and annotation workflows must be efficient and not physically fatiguing (mouse-intensive precision work over long periods)."
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Reduced finger precision, touchscreen may not register through non-conductive gloves. Requires large touch targets (min 44px), gesture-based nav, and minimal fine-motor interactions."
+  - factor: "One-handed operation"
+    impact: "Other hand holding radio, flashlight, weapon, door handle, or patient. All critical actions must be reachable with a single thumb on a phone-sized screen."
+  - factor: "Non-standing position (kneeling, prone, seated)"
+    impact: "Device angle and arm reach change dramatically. Screens must be readable at oblique angles. Wrist-mounted displays become preferable."
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Body armor, duty belt, medical kit, fire hose — limits arm range of motion and how the device can be held or positioned."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
 
 ```yaml
 psychological_factors:
-  - factor: "Procedural anxiety — fear of compromising evidence"
-    impact: "Every action in the system feels consequential. Will the clip I create be distinguishable from the original? Will my access be logged? Could something I do give the defense grounds to challenge the footage? The UI must make it clear what actions are non-destructive and what creates audit entries."
-  - factor: "Unfamiliarity with drone operations concepts"
-    impact: "Does not think in terms of flight IDs, telemetry, docks, or airspace. Thinks in terms of incidents, dates, locations, and case numbers. The interface must translate between these two mental models."
-  - factor: "Deadline pressure from legal proceedings"
-    impact: "Working against court dates, filing deadlines, and internal review timelines. The system must not create bottlenecks — waiting for admin access, slow exports, or unclear search results costs time they don't have."
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Fight-or-flight response active. Fine motor skills degrade, tunnel vision occurs, auditory exclusion is common. Users revert to simplest, most familiar interface patterns. Multi-step workflows get abandoned."
+  - factor: "Divided / split attention"
+    impact: "Simultaneously managing radio comms, physical environment, team coordination, and device interface. The device is not their primary focus — it's a secondary or tertiary attention stream."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Too many simultaneous data streams — radio, video, map, text, environmental cues. Working memory is full. Users fixate on one source and miss critical changes elsewhere."
 ```
+
 
 ## Key Scenarios
 
 ```yaml
 scenarios:
-  - trigger: Detective assigned to a robbery case needs to review drone footage from the night of the incident
-    goal: Find the relevant footage, identify the suspect's movements, clip and export the key moments for the case file
-    current_pain: No easy way to search footage by incident, time, or location without knowing how the drone program is organized. Must ask the admin to find and export footage on their behalf.
-    ideal_experience: Search by date, time, location, or CAD incident number. Preview results. Scrub with frame-level precision. Clip and export with chain-of-custody metadata intact.
+  - trigger: DFR drone arrives on scene before ground units
+    goal: Assess threat level, plan approach direction, determine de-escalation opportunity
+    current_pain: Switching between apps for video, map, and team positions adds cognitive load during approach
+    ideal_experience: Single-screen view with video, map overlay, and team positions; audio relay from pilot on radio channel
 
-  - trigger: Internal affairs investigation into an officer use-of-force incident
-    goal: Review the full drone record of the incident — what was visible, when, from what angle — and produce a documented record of the review
-    current_pain: No audit trail of the review itself; unclear whether footage has been accessed or modified by others prior to review
-    ideal_experience: Immutable access log showing all prior views and exports; ability to compare original footage against any clips or exports; exportable review report with timestamps
-
-  - trigger: Prosecutor needs footage for trial
-    goal: Receive court-admissible footage with verified integrity and a documented chain of custody
-    current_pain: Footage exported as a raw file with no accompanying metadata, hash verification, or custody documentation
-    ideal_experience: One-click export package including footage, SHA-256 hash, access log, and chain-of-custody documentation formatted for court submission
-
-  - trigger: Civil litigation — agency needs to demonstrate what was visible to the drone operator at a specific moment
-    goal: Reconstruct exactly what the operator could see at a given timestamp, including camera angle, zoom level, and field of view
-    current_pain: Exported footage lacks telemetry overlay; no way to show camera orientation or field of view at a specific moment
-    ideal_experience: Playback with optional telemetry overlay (gimbal angle, altitude, heading) to contextualize exactly what was and wasn't visible
+  - trigger: Active pursuit with suspect fleeing on foot
+    goal: Maintain visual on suspect, coordinate containment perimeter
+    current_pain: Video feed latency or dropout during critical moments; difficulty communicating drone-observed position to ground units
+    ideal_experience: Real-time low-latency overhead tracking with auto-updating suspect marker on shared ATAK map
 ```
 
 ## Anti-Goals
 
-- Does NOT want to learn drone operations software — they want a video review tool
-- Does NOT want to rely on the drone program admin to retrieve footage on their behalf
-- Does NOT want to take any action that could compromise the evidentiary integrity of footage
-- Does NOT want to manually redact PII when automated tools could handle it
-- Does NOT want to export footage that arrives at the prosecutor's office in an unusable or unverifiable format
+- Does NOT want to become a drone operator — they consume aerial intelligence, they don't pilot
+- Does NOT want to manage settings, configurations, or accounts during operations
+- Does NOT want information overload — needs filtered, actionable intelligence, not raw data dumps
 
 ## Domain Vocabulary
 
-`chain of custody, evidentiary integrity, SHA-256, hash verification, redaction, PII, CJIS, data retention, export, court-admissible, metadata, audit log, use of force, internal affairs, incident timeline, clipping, annotation, case file, discovery, FOIA, public records request, bodycam, corroborating footage`
+`bird's eye, overhead, eye in the sky, overwatch, containment, perimeter, approach, egress, Alpha/Bravo/Charlie/Delta, hot zone, warm zone, cold zone, staging, TOC, CP, be advised, copy, roger, BOLO, suspect description, last known direction`
 
 ## Wish List
 
-- Let me find the footage I need by searching for a date, time, location, or incident number. Don't make me learn how your drone program is organized.
-- When I clip and export footage, include everything needed for court — the hash, the access log, the chain of custody — in one package. Don't make me assemble it myself.
-- Make it obvious what I can and can't do without affecting the original recording. I need to know that nothing I do will give the defense an angle to challenge the evidence.
-- Blur faces and plates automatically for footage I need to share outside the department. Don't make me do it frame by frame.
+Give me video and a map on the same screen — I don't have time to switch apps while I'm on approach. Make it simpler than TAK. I just need to see where the drone is looking and where my team is. If the feed drops, tell me immediately and clearly. It has to work with gloves on, one hand, in the dark.
