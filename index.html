@@ -429,16 +429,29 @@ let showPreview = false;
 let previewMode = "raw";
 let expandedFactors = {};
 let activeTemplate = null;
-let fileTemplates = [];
-let dirHandle = null;
-
 const TEMPLATES=[
-  {id:"tpl-admin",name:"Manager / Admin",icon:"⚡",desc:"Always justifying the program. Turns flight data into political ammunition."},
-  {id:"tpl-field-pilot",name:"Field Pilot",icon:"🛸",desc:"Doesn't think about DroneSense. The drone is a tool — invisible when working, infuriating when not."},
-  {id:"tpl-ground-team",name:"Ground Team",icon:"🥾",desc:"Boots on the ground translating aerial intelligence into real-time decisions."},
-  {id:"tpl-playback-viewer",name:"Playback Viewer",icon:"🔍",desc:"Post-incident investigator. Treats footage as evidence, not a tactical tool."},
-  {id:"tpl-remote-pilot",name:"Remote Pilot",icon:"🎮",desc:"DFR specialist. First first responder — arrives on scene before anyone else."},
-  {id:"tpl-viewer",name:"Viewer",icon:"👁️",desc:"Live feed consumer making active command decisions from aerial intelligence."},
+  {id:"tpl-admin",name:"Manager / Admin",icon:"⚡",platform:"DroneSense",desc:"Always justifying the program. Turns flight data into political ammunition."},
+  {id:"tpl-field-pilot",name:"Field Pilot",icon:"🛸",platform:"DroneSense",desc:"Doesn't think about DroneSense. The drone is a tool — invisible when working, infuriating when not."},
+  {id:"tpl-ground-team",name:"Ground Team",icon:"🥾",platform:"DroneSense",desc:"Boots on the ground translating aerial intelligence into real-time decisions."},
+  {id:"tpl-playback-viewer",name:"Playback Viewer",icon:"🔍",platform:"DroneSense",desc:"Post-incident investigator. Treats footage as evidence, not a tactical tool."},
+  {id:"tpl-remote-pilot",name:"Remote Pilot",icon:"🎮",platform:"DroneSense",desc:"DFR specialist. First first responder — arrives on scene before anyone else."},
+  {id:"tpl-viewer",name:"Viewer",icon:"👁️",platform:"DroneSense",desc:"Live feed consumer making active command decisions from aerial intelligence."},
+  {id:"tpl-vl-patrol-officer",name:"Patrol Officer",icon:"🚔",platform:"Visual Labs",desc:"Frontline law enforcement officer / primary body camera user."},
+  {id:"tpl-vl-supervisor",name:"Supervisor / Sergeant",icon:"🎖️",platform:"Visual Labs",desc:"First-line supervisor responsible for officer conduct and footage compliance."},
+  {id:"tpl-vl-detective",name:"Detective / Investigator",icon:"🔎",platform:"Visual Labs",desc:"Criminal investigator using footage as evidentiary building blocks."},
+  {id:"tpl-vl-evidence-tech",name:"Digital Evidence Tech",icon:"🗄️",platform:"Visual Labs",desc:"Evidence custodian / digital evidence system administrator."},
+  {id:"tpl-vl-command-staff",name:"Command Staff / Chiefs",icon:"⭐",platform:"Visual Labs",desc:"Executive leadership — program policy owner and accountability lead."},
+  {id:"tpl-vl-prosecutor",name:"Prosecutor / DA",icon:"⚖️",platform:"Visual Labs",desc:"Criminal prosecutor using video evidence for case preparation and trial."},
+  {id:"tpl-vl-internal-affairs",name:"Internal Affairs",icon:"🔏",platform:"Visual Labs",desc:"Internal investigator of officer conduct and policy compliance."},
+  {id:"tpl-vl-foia-officer",name:"FOIA / Public Records",icon:"📋",platform:"Visual Labs",desc:"Public records custodian responsible for processing and releasing footage under law."},
+  {id:"tpl-vl-training-officer",name:"Training Officer",icon:"🎓",platform:"Visual Labs",desc:"Officer development specialist using footage for training and skills improvement."},
+  {id:"tpl-vl-it-admin",name:"IT Administrator",icon:"🖥️",platform:"Visual Labs",desc:"Technology administrator responsible for BWC system infrastructure and fleet management."},
+  {id:"tpl-vl-judge",name:"Judge / Court",icon:"🏛️",platform:"Visual Labs",desc:"Judicial officer and court staff responsible for accepting and playing video evidence."},
+  {id:"tpl-vl-oversight-board",name:"Civilian Oversight Board",icon:"👥",platform:"Visual Labs",desc:"Independent civilian reviewer assessing officer conduct and department accountability."},
+  {id:"tpl-vl-private-security",name:"Private Security",icon:"🛡️",platform:"Visual Labs",desc:"Non-sworn security professional using body cameras for incident documentation."},
+  {id:"tpl-vl-ems",name:"EMS / Paramedic",icon:"🚑",platform:"Visual Labs",desc:"Emergency medical services provider documenting patient encounters with body cameras."},
+  {id:"tpl-vl-corrections",name:"Corrections Officer",icon:"🔐",platform:"Visual Labs",desc:"Detention facility staff documenting inmate interactions and facility incidents."},
+  {id:"tpl-vl-transit-security",name:"Transit Security",icon:"🚇",platform:"Visual Labs",desc:"Transit authority or transportation security officer documenting passenger interactions."},
 ];
 
 // ============================================================
@@ -917,29 +930,19 @@ function loadTemplate(tpl){
 function renderSidebar(){
   const sb=document.getElementById("templateSidebar");
   if(!sb) return;
-  let html=`<div class="template-sidebar-head">DroneSense</div>`+
-    TEMPLATES.map(t=>`<div class="template-card${activeTemplate===t.id?" active":""}" data-tpl="${t.id}">
+  const byPlatform={};
+  TEMPLATES.forEach(t=>{const p=t.platform||'Other';(byPlatform[p]=byPlatform[p]||[]).push(t);});
+  const order=['DroneSense','Visual Labs'];
+  const platforms=[...order.filter(p=>byPlatform[p]),...Object.keys(byPlatform).filter(p=>!order.includes(p))];
+  let html='';
+  platforms.forEach((platform,i)=>{
+    html+=`<div class="template-sidebar-head"${i>0?' style="margin-top:8px"':''}>${platform}</div>`;
+    html+=byPlatform[platform].map(t=>`<div class="template-card${activeTemplate===t.id?" active":""}" data-tpl="${t.id}">
       <div class="template-card-icon">${t.icon}</div>
       <div class="template-card-name">${t.name}</div>
       <div class="template-card-desc">${t.desc}</div>
     </div>`).join("");
-  if(fileTemplates.length){
-    const byPlatform={};
-    fileTemplates.forEach(t=>{const p=t.platform||'Other';(byPlatform[p]=byPlatform[p]||[]).push(t);});
-    Object.entries(byPlatform).forEach(([platform,tpls])=>{
-      html+=`<div class="template-sidebar-head" style="margin-top:8px">${platform}</div>`;
-      html+=tpls.map(t=>`<div class="template-card${activeTemplate===t.id?" active":""}" data-tpl-file="${t.id}">
-        <div class="template-card-icon">${t.icon}</div>
-        <div class="template-card-name">${t.name}</div>
-        <div class="template-card-desc">${t.desc}</div>
-      </div>`).join("");
-    });
-  }
-  html+=`<div style="padding:8px 4px 4px">
-    <button class="btn btn-ghost sm" id="btnLoadFolder" style="width:100%;justify-content:center;font-size:11px">
-      ${fileTemplates.length?'↺ Reload folder':'📁 Load from folder'}
-    </button>
-  </div>`;
+  });
   sb.innerHTML=html;
   sb.querySelectorAll("[data-tpl]").forEach(el=>{
     el.addEventListener("click",()=>{
@@ -947,61 +950,6 @@ function renderSidebar(){
       if(tpl) loadTemplate(tpl);
     });
   });
-  sb.querySelectorAll("[data-tpl-file]").forEach(el=>{
-    el.addEventListener("click",()=>{
-      const tpl=fileTemplates.find(t=>t.id===el.dataset.tplFile);
-      if(tpl) loadTemplate(tpl);
-    });
-  });
-  const btnLF=document.getElementById("btnLoadFolder");
-  if(btnLF) btnLF.addEventListener("click",loadTemplatesFolder);
-}
-
-async function loadTemplatesFolder(){
-  if(!window.showDirectoryPicker){
-    alert('File System Access API not supported. Please use Chrome or Edge.');
-    return;
-  }
-  try{
-    if(!dirHandle||fileTemplates.length===0){
-      dirHandle=await window.showDirectoryPicker({mode:'read'});
-    }
-    await scanTemplateFolder();
-  }catch(e){
-    if(e.name!=='AbortError') console.error('Folder load error:',e);
-  }
-}
-
-async function scanTemplateFolder(){
-  if(!dirHandle) return;
-  const templates=[];
-  for await(const[name,handle] of dirHandle.entries()){
-    if(handle.kind==='file'&&name.endsWith('.md')){
-      try{
-        const file=await handle.getFile();
-        const text=await file.text();
-        const nameM=text.match(/^#\s+Persona:\s*(.+)/m);
-        const iconM=text.match(/^icon:\s*([^\n\r#]+)/m);
-        const platformM=text.match(/^platform:\s*([^\n\r#]+)/m);
-        const roleM=text.match(/^role:\s*([^\n\r#]+)/m);
-        templates.push({
-          id:'file::'+name,
-          name:nameM?nameM[1].trim():name.replace(/\.md$/,''),
-          icon:iconM?iconM[1].trim():'👤',
-          platform:platformM?platformM[1].trim():'',
-          desc:roleM?roleM[1].trim():'',
-          content:text
-        });
-      }catch(err){console.warn('Could not read',name,err);}
-    }
-  }
-  templates.sort((a,b)=>{
-    if(a.platform<b.platform) return -1;
-    if(a.platform>b.platform) return 1;
-    return a.name.localeCompare(b.name);
-  });
-  fileTemplates=templates;
-  renderSidebar();
 }
 
 // ============================================================
@@ -2613,6 +2561,2214 @@ feature_usage:
     frequency: "Rarely"
     red_routes_baseline: "Used Frequently"
 ```
+</script>
+
+<script type="text/template" id="tpl-vl-patrol-officer">
+# Persona: Patrol Officer / Frontline LEO
+
+```yaml
+persona_id: patrol_officer
+role: Frontline law enforcement officer / primary body camera user
+classification: CORE USER
+platform: Visual Labs
+icon: 🚔
+```
+
+## Who is this user?
+
+Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, dock. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Zero friction activation — camera must be recording before the situation escalates"
+    context: "Officers draw their camera like they draw their weapon — in seconds, under stress, without looking. A camera that requires multiple steps, confirmation screens, or PIN entry before recording is a camera that won't be running when it matters most."
+  - weight: 5/5 (Critical)
+    need: "Reliable automatic upload and docking without manual intervention"
+    context: "End of shift means getting home. Officers will not troubleshoot sync failures, re-dock cameras, or manually transfer footage. Docking must complete upload silently and automatically. Failures that require officer attention are failures that lose evidence."
+  - weight: 4/5 (High)
+    need: "Simple, fast incident tagging without disrupting the call workflow"
+    context: "Policies require tagging footage by incident type, case number, or call type. This must happen in seconds with minimal input — ideally one tap or auto-populated from CAD data. Any tagging workflow that takes more than 10 seconds at scene will be skipped."
+  - weight: 3/5 (Medium)
+    need: "Confidence that footage is actually saved and will be there when needed"
+    context: "Officers have had footage disappear, fail to upload, or get corrupted. This erodes trust. Clear status indicators — 'uploaded,' 'saved,' 'sync complete' — are not UX polish, they are anxiety relief for someone whose career may depend on that recording."
+  - weight: 2/5 (Low)
+    need: "Ability to review personal footage quickly before writing a report"
+    context: "Reviewing footage before writing a report improves report accuracy and defensibility. But this is only done occasionally — most officers write from memory. Quick playback of personal recordings should require no special permissions or workflows."
+  - weight: 1/5 (Nice to have)
+    need: "Pre-event buffer that captures what happened before activation"
+    context: "Many critical incidents begin before the officer thinks to hit record. A 30–60 second pre-event buffer captures the moment of escalation that manual activation misses."
+```
+
+## User Context
+
+In the field — on foot, in a vehicle, or at a scene. The body camera is attached to uniform and activates in response to policy triggers (traffic stops, use of force, arrests) or manual activation. Officers are managing radio traffic, safety considerations, and tactical awareness simultaneously. End-of-shift docking happens at the station, often when tired. They interact with the desktop/web software rarely — primarily to review a specific piece of footage they need for a report. Tech access is through department-issued devices with restricted permissions.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 4/10 — Comfortable with the hardware camera unit but not the backend software. Uses the system as it was trained, not exploratorily. Expects things to work without configuration.
+risk_tolerance: 5/10 — Personally risk-averse about footage — missing or lost footage is a career and legal risk. Risk tolerant operationally.
+stress_level_during_use: 8/10 — Camera activation occurs in high-stress moments (traffic stops, confrontations, use of force). Post-shift docking is low-stress but fatigue is high.
+decision_speed: Seconds — Activation decisions happen in seconds. In-field tagging in seconds. No deliberation.
+adoption_attitude: Pragmatic skeptic — Will adopt tools that make the job easier or reduce liability. Resents tools that add administrative burden.
+primary_motivation: Doing the job safely and going home — the camera is protection, evidence, and policy compliance.
+secondary_motivation: Personal protection — footage that corroborates their account in complaints, internal investigations, or prosecutions.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Stream Video (Visual Labs)"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Log incident"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Every day"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Upload document"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Edit data for flight log"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "High ambient noise"
+    impact: "Sirens, engines, crowds, and shouting at scenes. Audio cues and voice-activated recording features are unreliable. Visual activation indicators must be unambiguous."
+  - factor: "Low light / darkness"
+    impact: "Night shifts and low-light scenes. Camera activation status indicators must be readable in darkness. Bright screen UI causes night vision disruption."
+  - factor: "Moving vehicle / vibration"
+    impact: "Responding code-3 in a vehicle while needing to confirm camera status. Touchscreen accuracy drops significantly."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Touch input compromised. Camera controls must be operable with gloves. Hardware buttons preferred over touchscreen for primary functions."
+  - factor: "One-handed operation"
+    impact: "Often holding a radio, flashlight, or maintaining physical control of a subject. Critical camera functions must be operable single-handed."
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Body armor, duty belt, and tactical gear limit range of motion. Camera placement and activation method must account for restricted arm movement."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Use-of-force situations trigger fight-or-flight. Camera activation must be habituated — a single, unmistakable motion. Multi-step activation will not happen under acute stress."
+  - factor: "Decision fatigue"
+    impact: "End of a 12-hour shift, especially on busy nights. Docking, tagging, and any post-shift software interaction suffers from depleted attention. Must be automatic or near-zero effort."
+  - factor: "External organizational / political pressure"
+    impact: "Officers know footage may be reviewed by supervisors, IA, and the public. This creates both protective motivation (wanting it to record) and anxiety about review context."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Traffic stop escalates to use of force
+    goal: Camera is recording from the moment of escalation, footage is automatically saved and tagged
+    current_pain: Manual activation required, officer under stress may forget or activate too late; post-incident tagging requires going back into a portal and filling out fields while still at scene
+    ideal_experience: Pre-event buffer captures escalation; single button activation with unmistakable visual/haptic confirmation; CAD call number auto-populates the tag; docking at end of shift uploads silently
+
+  - trigger: Officer receives complaint two weeks after an incident
+    goal: Pull up the BWC footage from that specific call quickly to prepare for internal interview
+    current_pain: Must log into a separate portal, remember dates/times, search through multiple recordings, wait for playback to load
+    ideal_experience: Search by date, call type, or badge number; footage loads in seconds; officer can clip and share the relevant segment directly with their union rep
+```
+
+## Anti-Goals
+
+- Does NOT want to become a footage manager or evidence clerk
+- Does NOT want post-shift administrative burden related to the camera system
+- Does NOT want to troubleshoot sync or upload failures — it should just work
+- Does NOT want footage to be inaccessible when they need it for self-defense in a complaint
+
+## Domain Vocabulary
+
+`BWC, body cam, activation, pre-event buffer, dock, upload, sync, incident tag, use of force, UOF, traffic stop, arrest, CAD, dispatch, call number, report writing, chain of custody, IA, complaint, protective recording, shift, end of shift, rollcall`
+
+## Wish List
+
+Hit one button and know it's recording. That's it. At the end of shift I dock it and forget about it — everything uploads automatically. When I need footage for a report, I find it in seconds by date and call number. No portals, no passwords, no waiting. If there's a complaint, I can pull up exactly what happened without needing to ask IT or a supervisor. The system protects me the same way it protects the public.
+</script>
+
+<script type="text/template" id="tpl-vl-supervisor">
+# Persona: Supervisor / Sergeant / Watch Commander
+
+```yaml
+persona_id: supervisor
+role: First-line supervisor responsible for officer conduct and footage compliance
+classification: CORE USER
+platform: Visual Labs
+icon: 🎖️
+```
+
+## Who is this user?
+
+Manages a squad of officers and is accountable for their conduct, policy compliance, and the integrity of the footage their team generates. The defining truth about this persona: they are accountable for things they weren't present for. Every complaint, every use-of-force incident, every policy deviation happens on their squad's cameras — and they're held responsible whether or not they watched it. BWC is simultaneously their most powerful management tool and their most time-consuming administrative burden.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Fast, targeted access to specific incidents without watching hours of footage"
+    context: "A complaint comes in at 8am. The supervisor needs to review the relevant 5 minutes of footage before a 9am briefing. Searching through 8 hours of untagged recording from multiple officers is not an option. Smart search, timeline navigation, and incident tagging are existential features."
+  - weight: 5/5 (Critical)
+    need: "Automated alerts for policy compliance failures — missed activations, gaps in recording, UOF without camera on"
+    context: "Supervisors cannot watch all footage. They need the system to flag exceptions: an officer who should have been recording wasn't, a use-of-force event with no corresponding BWC activation, a gap in footage during a critical event. These alerts are how supervisors stay compliant at scale."
+  - weight: 4/5 (High)
+    need: "Ability to coach officers using specific footage clips"
+    context: "The most effective supervisory tool is showing, not telling. Pulling a 30-second clip to say 'this is where the de-escalation should have started' is more powerful than any written counseling. Clip creation and annotation must be fast and intuitive."
+  - weight: 3/5 (Medium)
+    need: "Squad-level compliance dashboard — who is recording, who isn't, equipment status"
+    context: "Before every shift, a supervisor needs a 30-second status check: all cameras charged, all officers recording policy events, no outstanding sync failures. Currently this requires logging into multiple screens."
+  - weight: 2/5 (Low)
+    need: "Ability to add supervisor notes to footage without altering the original"
+    context: "Annotating footage for review, training, or documentation requires non-destructive notes. Comments, timestamps, and review status markers must be addable without altering chain of custody."
+  - weight: 1/5 (Nice to have)
+    need: "Comparative analytics — how does this officer's recording rate compare to squad average?"
+    context: "Pattern identification requires trend data. Supervisors want to spot outliers before they become problems — not discover them during a complaint investigation."
+```
+
+## User Context
+
+Split between field supervision and desk work. Reviews footage on a workstation at the precinct, often under time pressure from internal affairs, command, or public complaints. Manages squad cameras in the evidence system and runs shift briefings using footage for training moments. Chronic moderate stress that spikes when complaints arrive or incidents go public. Relies heavily on search and filter tools — any friction in finding specific footage is a direct operational cost.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 5/10 — Comfortable with basic software but not a power user. Was promoted from patrol, not IT. Learns tools that help and ignores tools that don't. Will find workarounds before asking for training.
+risk_tolerance: 3/10 — Highly risk-averse. Their career is on the line every time an officer on their squad is the subject of a complaint. Compliance failures are personal liability.
+stress_level_during_use: 6/10 — Elevated when reviewing incident footage or responding to complaints. Normal when doing routine compliance checks.
+decision_speed: Minutes to hours — Reviews footage, determines policy compliance, drafts findings. Deliberate but not slow.
+adoption_attitude: Pragmatic adopter — Will embrace tools that make compliance management faster. Resists tools that add steps or require retraining the squad.
+primary_motivation: Ensuring compliance and protecting the squad — footage is both accountability and protection.
+secondary_motivation: Career protection — supervisors who miss compliance failures face discipline. The system that catches problems before IA does is a friend.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Every day"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Log incident"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Report/AAR on a mission/event"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Create and Manage users"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Report on the program"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "High ambient noise"
+    impact: "Precinct environment is noisy. Alert sounds for compliance failures may not be heard. Visual dashboards and notification badges are more reliable than audio cues."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Severe time pressure"
+    impact: "Complaints arrive with deadlines. Command wants briefings same-day. Every minute spent searching for footage is a minute not spent on the actual review."
+  - factor: "Decision fatigue"
+    impact: "Supervisors make dozens of judgment calls per shift. Footage review at end of shift suffers from depleted cognitive resources. System must surface the most important clips first."
+  - factor: "External organizational / political pressure"
+    impact: "High-profile incidents create intense pressure from command, union, media, and the public simultaneously. The supervisor's handling of footage in these situations is scrutinized."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Managing multiple officers' footage streams, compliance alerts, complaint reviews, and active shift operations simultaneously. System must ruthlessly prioritize what requires immediate attention."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Complaint filed against officer — internal affairs requests footage within 24 hours
+    goal: Locate, review, and package all relevant footage from the incident date quickly and completely
+    current_pain: Must search by date and badge number across multiple recordings, no automated flagging of relevant clips, packaging for IA requires manual exports and labeling
+    ideal_experience: Single search pulls all footage tied to the officer, incident date, and call number; supervisor adds timestamped notes to key moments; IA receives a packaged review link with chain-of-custody intact
+
+  - trigger: Preparing for weekly squad briefing — want to use footage to reinforce de-escalation training
+    goal: Find 2–3 relevant clips from recent incidents that illustrate specific techniques
+    current_pain: Reviewing footage to find teachable moments is time-consuming; clipping and sharing requires exporting large files and emailing them
+    ideal_experience: Tag-based search surfaces "de-escalation" clips from the past 30 days; supervisor clips 45-second segments, annotates with coaching notes, and shares via a briefing link that plays in the rollcall room
+```
+
+## Anti-Goals
+
+- Does NOT want to watch hours of untagged footage to find a 5-minute incident
+- Does NOT want to discover compliance failures only when IA brings them up
+- Does NOT want to be the manual bridge between BWC footage and chain-of-custody documentation
+- Does NOT want to learn complex software — needs to find footage fast under pressure
+
+## Domain Vocabulary
+
+`squad, watch, shift, rollcall, use of force, UOF, complaint, IA referral, chain of custody, policy compliance, activation rate, recording gap, coaching, counseling, administrative review, critical incident, BWC audit, supervisor review, annotation, clip, after-action review`
+
+## Wish List
+
+Alert me before IA does. If an officer wasn't recording when they should have been, I need to know that shift — not two weeks later when a complaint comes in. Let me search footage like a Google search: officer name, date, incident type, and go. When I find the right clip, let me annotate it and share it without exporting a file. Give me a one-page compliance summary for my squad before every shift so I know everyone is good before we hit the street.
+</script>
+
+<script type="text/template" id="tpl-vl-detective">
+# Persona: Detective / Investigator
+
+```yaml
+persona_id: detective
+role: Criminal investigator using footage as evidentiary building blocks
+classification: SECONDARY USER
+platform: Visual Labs
+icon: 🔎
+```
+
+## Who is this user?
+
+Builds criminal cases and uses body camera footage as a key piece of evidence. Unlike patrol officers who generate footage, detectives consume it — often weeks or months after it was recorded. The defining truth about this persona: they treat footage like a crime scene. Every clip has evidentiary chain of custody implications. They need to find the exact moment in hours of footage that proves or disproves a fact, link it to other evidence, and ensure it survives prosecution. They are power searchers who use the system like an evidence database.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Advanced search — by location, time, officer, incident type, and cross-reference with case numbers"
+    context: "Detectives investigate incidents that occurred weeks ago across multiple officers and locations. They need to pull all footage related to a case — not just the primary officer's camera. GPS-based search, multi-officer queries, and case number cross-referencing are table stakes."
+  - weight: 5/5 (Critical)
+    need: "Chain of custody preservation — any access, export, or clip must be auditable"
+    context: "Defense attorneys will challenge footage provenance. Every access event, edit, clip, and export must be logged with user, timestamp, and action taken. Any system that allows unlogged modification destroys evidentiary value."
+  - weight: 4/5 (High)
+    need: "Timeline tools — sync multiple cameras to a single chronological view of an incident"
+    context: "Complex incidents involve multiple officers, each with their own camera. Reconstructing what happened requires lining up footage from 4–6 cameras on a synchronized timeline. Without this, detectives manually scrub each video while tracking elapsed time on paper."
+  - weight: 4/5 (High)
+    need: "Link footage to existing case management systems"
+    context: "Detectives live in their records management system (RMS). Footage sitting in a separate silo must be linkable — ideally auto-linked — to the RMS case record. Copying file paths and referencing external systems is friction that leads to incomplete case documentation."
+  - weight: 3/5 (Medium)
+    need: "Annotate and clip specific segments for DA submission without altering originals"
+    context: "Prosecutors need curated clips, not raw 4-hour recordings. Detectives must be able to create a non-destructive excerpt, add evidentiary notes, and share it securely without compromising the original."
+  - weight: 2/5 (Low)
+    need: "Audio search or AI-assisted event detection within footage"
+    context: "Scrubbing 6 hours of footage looking for a specific exchange is time-prohibitive. Keyword search within audio, or AI-flagged events (raised voices, gunshot detection, fast movement), would dramatically reduce investigation time."
+```
+
+## User Context
+
+Working at a desk in an investigations unit — typically a standard workstation with one or two monitors. Case loads are heavy and time is scarce. BWC review is one of many evidence types being managed simultaneously (witness interviews, surveillance video, forensics). Access to footage must be possible without involving evidence technicians for routine case work. Chain-of-custody consciousness is constant — every action has potential courtroom implications.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 6/10 — Detail-oriented and methodical. Will learn complex tools if they provide clear investigative value. Frustrated by systems that feel designed for administration rather than investigation.
+risk_tolerance: 2/10 — Extremely low for anything that could compromise evidence admissibility. Will not take shortcuts that could give defense attorneys an angle.
+stress_level_during_use: 5/10 — Steady caseload pressure, not acute incident stress. Spikes during trial preparation and high-profile cases.
+decision_speed: Days to weeks — Builds cases methodically. Footage review is deliberate, not rushed.
+adoption_attitude: Evidence-driven adopter — Will use tools that provide provable investigative value. Skeptical of novelty features.
+primary_motivation: Building strong, defensible cases — footage is evidence, not operational intelligence.
+secondary_motivation: Efficiency — case loads are heavy and investigation time is finite. Anything that reduces hours of manual footage scrubbing is welcomed.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Upload document"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Records request"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Log incident"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Vigilance fatigue / monitoring fatigue"
+    impact: "Reviewing hours of footage for a specific event causes attention drift. Detective may miss critical moments after extended viewing. Timeline scrubbing and event markers reduce the burden."
+  - factor: "Confirmation bias risk"
+    impact: "Investigators searching for evidence to support a theory may unconsciously focus on footage that confirms rather than challenges their hypothesis. System should present footage objectively without framing."
+  - factor: "Decision fatigue"
+    impact: "Heavy caseloads mean footage review happens at any hour, often after other cognitively demanding investigative work. Critical review moments must be easily flagged for re-review."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Managing multiple active cases simultaneously with varied evidence types. Footage from one case cannot be confused with another. Clear case labeling and visual separation are critical."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Robbery case — need to find all BWC footage from the 4-block area during the 45-minute window of the incident
+    goal: Identify all officers whose cameras captured the suspect, the approach, and the escape route
+    current_pain: Must contact each officer individually to find out if they were in the area, then request footage by badge number; no GPS-based footage search exists; manual correlation of timestamps is done in a spreadsheet
+    ideal_experience: Draw a geographic boundary on a map, set a time window, and the system returns all BWC footage from officers in that area — automatically synchronized by timestamp
+
+  - trigger: Case going to trial — prosecutor needs key clips with full chain of custody documentation
+    goal: Package all relevant footage segments with timestamps, officer names, and unbroken chain of custody for disclosure
+    current_pain: Exporting clips creates copies with unclear provenance; chain of custody documentation is manual and separate from the footage system; prosecutor receives files via email
+    ideal_experience: Detective creates a non-destructive "case package" — clips with embedded metadata and a system-generated chain of custody log — shared via a secure link that auto-expires after disclosure
+```
+
+## Anti-Goals
+
+- Does NOT want to compromise chain of custody to get footage quickly
+- Does NOT want to manually correlate timestamps across multiple camera recordings
+- Does NOT want footage siloed from the case management system
+- Does NOT want to spend hours scrubbing unindexed footage looking for a specific event
+
+## Domain Vocabulary
+
+`chain of custody, evidentiary value, disclosure, Brady material, incident timeline, multi-camera sync, RMS, case number, cross-reference, clip extraction, metadata, audit log, authentication, exhibit, prosecution package, defense discovery, admissibility`
+
+## Wish List
+
+Give me a search engine for evidence. I should be able to draw a box on a map, set a time window, and get every camera that was in that area. Let me sync those feeds to a single timeline and scrub through them together. When I clip something for the DA, the system generates a chain-of-custody certificate automatically — no paperwork. Every access I make, every clip I create, is logged. Defense attorneys don't get to challenge the footage; they challenge the crime.
+</script>
+
+<script type="text/template" id="tpl-vl-evidence-tech">
+# Persona: Digital Evidence Technician
+
+```yaml
+persona_id: evidence_tech
+role: Evidence custodian / digital evidence system administrator
+classification: CORE USER
+platform: Visual Labs
+icon: 🗄️
+```
+
+## Who is this user?
+
+Manages the lifecycle of all digital evidence — ingestion, tagging, storage, retention, and export. The defining truth about this persona: they are the system. Every piece of footage flows through them. They are the ones who get called when footage is missing, when a hard drive is full, when the DA needs something in 30 minutes, and when an IA investigation requires a complete audit trail. They are the last line of defense between evidence integrity and catastrophic failure.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Bulk evidence management — tag, categorize, apply retention policies at scale"
+    context: "A department of 200 officers generates thousands of hours of footage per week. Manual processing of each clip is not possible. Bulk tagging, retention policy automation, and batch export are not conveniences — they are the only way this job is physically doable."
+  - weight: 5/5 (Critical)
+    need: "Complete, unalterable audit trail for every piece of evidence"
+    context: "Chain of custody is the entire job. Every access, export, copy, or modification must be logged with user, timestamp, and action. A single break in the chain destroys evidentiary value. The system must make tampering not just difficult but impossible — and must prove it."
+  - weight: 4/5 (High)
+    need: "Automated retention and purge workflows with exception handling"
+    context: "Retention policies are complex: 90 days for routine patrol, 7 years for felonies, indefinite for homicides, and holds for any footage under legal hold. Manual management of thousands of files against multiple retention schedules is error-prone. Automation with exception alerts is required."
+  - weight: 4/5 (High)
+    need: "Fast, reliable export in formats acceptable to prosecutors, courts, and IA"
+    context: "Receiving a request and delivering footage takes too long when export requires converting formats, burning DVDs, or managing large file transfers. Secure shareable links that expire and track access are the modern solution — and many agencies still don't have them."
+  - weight: 3/5 (Medium)
+    need: "Storage capacity monitoring and forecasting"
+    context: "Running out of storage mid-shift is a catastrophic failure. Evidence techs need real-time storage dashboards with usage trend forecasting — not alerts that fire when capacity is already critical."
+  - weight: 2/5 (Low)
+    need: "Deduplication and intelligent compression without quality loss"
+    context: "Storage costs are real. Footage that duplicates across multiple exports and backups compounds costs. Intelligent deduplication that preserves originals while reducing storage footprint is valuable but lower priority than core custody functions."
+```
+
+## User Context
+
+Primarily desk-based in an evidence management room or administrative unit. Works with web-based evidence management software across multiple monitors. Manages both physical evidence (hardware, drives) and digital evidence (video, metadata). Receives requests from detectives, IA, prosecutors, and supervisors. Always under deadline pressure from legal holds and discovery requests. Often a one or two-person team for an entire department.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 7/10 — The most technically capable evidence-side persona. Understands storage, formats, metadata, and retention policy logic. Not a developer but comfortable with system administration.
+risk_tolerance: 1/10 — Absolute lowest risk tolerance. A chain-of-custody break or lost evidence is a career-ending event. Will not accept any workflow that introduces ambiguity about evidence state.
+stress_level_during_use: 6/10 — Steady pressure from active requests and deadlines. Spikes acutely when high-profile cases have evidence requests with short turnarounds.
+decision_speed: Hours to days — Processes requests methodically. Will not rush steps that have legal implications.
+adoption_attitude: Cautious adopter — Will embrace automation that reduces manual error. Deeply skeptical of new tools that could introduce chain-of-custody risk.
+primary_motivation: Evidence integrity above all — every decision is made through the lens of "will this hold up in court."
+secondary_motivation: Managing an impossible volume of requests with a small team — efficiency through automation is survival.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Every day"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Edit data for flight log"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Records request"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Create and Manage users"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Upload document"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Report on the program"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Decision fatigue"
+    impact: "Processing hundreds of evidence requests weekly means routine decisions become error-prone over time. Automated workflows with exception-only review reduce cognitive load on repetitive tasks."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Managing multiple concurrent legal holds, retention schedules, and disclosure requests across hundreds of cases. A single missed hold can compromise a prosecution."
+  - factor: "External organizational / political pressure"
+    impact: "High-profile cases generate pressure from command, prosecutors, and outside counsel to expedite evidence processing. Speed pressure is the most common source of chain-of-custody risk."
+  - factor: "Severe time pressure"
+    impact: "Discovery deadlines are legal obligations. Evidence techs receive requests with 24–48 hour turnarounds for cases that have years of footage. Workflow automation is the only solution."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Prosecutor requests all footage from a 6-month-old homicide case for grand jury presentation
+    goal: Deliver complete, authenticated footage package with chain of custody documentation within 48 hours
+    current_pain: Footage is spread across multiple recording sessions, some under legal hold and some under standard retention; manually locating all clips, verifying holds, and generating custody documentation takes a full day for one case
+    ideal_experience: Case number search returns all associated footage automatically; system confirms hold status on each clip; one-click generates a complete disclosure package with embedded chain-of-custody certificate and secure delivery link
+
+  - trigger: Storage capacity reaches 85% — need to execute retention purge without destroying evidence under hold
+    goal: Free storage space while ensuring zero evidence under legal or administrative hold is deleted
+    current_pain: Must manually cross-reference the retention schedule against hold lists before running any purge; hold list is maintained in a separate spreadsheet; errors have occurred
+    ideal_experience: Automated retention dashboard shows what is eligible for purge and what is on hold; one-click purge executes only on eligible evidence with a full log of what was deleted, when, and by whom
+```
+
+## Anti-Goals
+
+- Does NOT want any workflow that creates ambiguity about evidence state or chain of custody
+- Does NOT want to be the manual bridge between the retention schedule spreadsheet and the evidence system
+- Does NOT want to field calls about missing footage because storage filled up without warning
+- Does NOT want to export evidence in formats that require conversion before use
+
+## Domain Vocabulary
+
+`chain of custody, retention policy, legal hold, purge, evidence custodian, metadata, audit log, disclosure, discovery, Brady, Giglio, deduplication, ingestion, backup, redundancy, format conversion, secure link, expiration, access log, disposition`
+
+## Wish List
+
+Automate everything I do manually today. Retention schedules should run themselves — the system knows what's on hold and what isn't. When a detective or prosecutor needs footage, I generate a secure link with a built-in chain-of-custody certificate in one click. Storage alerts before I'm full, not when I'm at 99%. And every action anyone takes on any piece of evidence — view, clip, export, share — shows up in an unalterable log that I can produce in court without a subpoena.
+</script>
+
+<script type="text/template" id="tpl-vl-command-staff">
+# Persona: Command Staff / Chiefs
+
+```yaml
+persona_id: command_staff
+role: Executive law enforcement leadership / program policy owner
+classification: SECONDARY USER
+platform: Visual Labs
+icon: ⭐
+```
+
+## Who is this user?
+
+Sets policy, manages risk, and is publicly accountable for the department's use of body cameras. The defining truth about this persona: they never touch the footage directly. Their relationship with the BWC program is strategic and political — accountability to the mayor, city council, community oversight boards, and media. They need the program to prove its value, demonstrate transparency, and never surprise them. The dashboard is their interface; the footage is the evidence behind a headline they never want to read.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Program-level accountability dashboards — compliance rates, policy adherence, incident trends"
+    context: "When the city council asks 'how is the BWC program performing,' the chief needs numbers. Activation rates, use-of-force corroboration rates, complaint investigation timelines, and policy compliance percentages are the story. These must be available without requesting a report from staff."
+  - weight: 5/5 (Critical)
+    need: "Proactive risk detection — know about critical incidents before they become public"
+    context: "The worst possible scenario is learning about a critical incident involving department footage from a news story or community complaint. Early-alert systems for use-of-force events, missing footage during critical incidents, and policy deviations are existential."
+  - weight: 4/5 (High)
+    need: "Transparent public-facing data that builds community trust"
+    context: "Community relations depend on demonstrating accountability. Publishing aggregate BWC usage statistics, complaint resolution timelines, and policy documents builds trust without exposing sensitive footage. The program needs a public accountability interface."
+  - weight: 3/5 (Medium)
+    need: "Policy management tools — publish, version, and enforce BWC policies across the organization"
+    context: "Policy changes must propagate. When the department updates the activation policy, every officer needs to acknowledge receipt, and compliance with the new policy must be trackable. This is currently a manual process."
+  - weight: 2/5 (Low)
+    need: "Trend analysis — use of force patterns, complaint patterns correlated with BWC data"
+    context: "Data-driven policing requires correlating BWC compliance data with use-of-force and complaint trends. Are officers who comply with activation policy receiving fewer complaints? This analysis requires cross-referencing data that currently lives in separate systems."
+  - weight: 1/5 (Nice to have)
+    need: "Media and legal hold management visibility"
+    context: "When a critical incident triggers media requests and litigation, the chief needs confidence that relevant footage is under hold and will not be purged. A simple dashboard confirming hold status on active cases reduces exposure."
+```
+
+## User Context
+
+Executive office environment — primarily using a laptop or large display for briefings. Interfaces with the BWC system primarily through dashboards and summary reports, not direct footage review. Meets with city officials, oversight boards, and media. Their primary anxiety is about surprises — critical incidents that the department didn't know about, policy failures that become headlines, or community trust events they weren't prepared for. Decision horizons are months to years.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 3/10 — Not a software user. Delegates operational system use to subordinates. Needs executive dashboards that tell a story in 90 seconds, not raw data interfaces.
+risk_tolerance: 2/10 — Extremely risk-averse. Any incident involving footage — loss, tampering, policy failure, unauthorized release — becomes a public and political crisis.
+stress_level_during_use: 4/10 — Low during routine reporting. High during critical incidents with media or political attention.
+decision_speed: Weeks to months — Strategic. Policy decisions, resource allocations, and community initiatives operate on long timelines.
+adoption_attitude: Late adopter driven by mandate — adopted BWC because of community pressure, grants, or legislation. Now owns the accountability obligation.
+primary_motivation: Risk reduction and transparency — the BWC program protects the department and demonstrates good faith to the community.
+secondary_motivation: Community trust — footage accountability builds legitimacy for the department and the chief personally.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Report on the program"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Watch the video feeds"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Manage Public Dashboard"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "External organizational / political pressure"
+    impact: "Chiefs operate under constant scrutiny from elected officials, media, and community advocates. Every decision involving BWC data has potential political implications."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Manages an entire department — BWC is one of dozens of priorities. Dashboards must surface only what requires executive attention; everything else is noise."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Direct system access is rare. Interfaces must be immediately usable without reorientation — the chief will not take a refresher before a city council briefing."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: City council requests quarterly BWC program performance report
+    goal: Present activation compliance rates, use-of-force corroboration, and complaint investigation trends in a visually compelling format
+    current_pain: Data lives in multiple systems; staff manually compile statistics into a presentation; takes 2–3 days of staff time; numbers sometimes conflict between sources
+    ideal_experience: Executive dashboard auto-generates a presentation-ready report with current-quarter metrics, trend charts, and compliance percentages — exportable to PDF in one click
+
+  - trigger: Critical use-of-force incident receives local media coverage
+    goal: Know immediately whether footage is captured, intact, under hold, and whether department policy was followed
+    current_pain: Chief receives a call from a reporter and has to call the evidence tech and supervisor to get status; sometimes the answers are unclear or contradictory
+    ideal_experience: Critical incident alert surfaces in the chief's dashboard immediately with footage status, policy compliance flag, officer compliance record, and legal hold confirmation — all without making a phone call
+```
+
+## Anti-Goals
+
+- Does NOT want to navigate complex software to get a status update
+- Does NOT want to be surprised by critical incidents that the system should have flagged
+- Does NOT want to present inaccurate data to city council because sources weren't synchronized
+- Does NOT want manual policy distribution and acknowledgment processes
+
+## Domain Vocabulary
+
+`activation rate, compliance rate, use of force, corroboration, critical incident, public accountability, transparency report, oversight board, city council, media inquiry, legal hold, policy acknowledgment, community trust, early intervention system, accountability data`
+
+## Wish List
+
+Tell me everything I need to know in a single dashboard that I can check in 2 minutes. When something critical happens, alert me before the reporters call. Give me a report I can hand to the city council without reformatting it. Let my community oversight board see the accountability data they need without giving them access to active investigations. And when an officer files a complaint, I want to know the footage is already locked down — not learn that after a lawsuit.
+</script>
+
+<script type="text/template" id="tpl-vl-prosecutor">
+# Persona: Prosecutor / District Attorney
+
+```yaml
+persona_id: prosecutor
+role: Criminal prosecutor using video evidence for case preparation and trial
+classification: TERTIARY USER
+platform: Visual Labs
+icon: ⚖️
+```
+
+## Who is this user?
+
+Receives and uses body camera footage as a critical piece of evidence in criminal prosecutions. The defining truth about this persona: they are an external user of the system who bears internal accountability for the case. They don't control how footage was captured or stored — they inherit whatever the department provides. Their focus is exclusively on what the footage proves, how quickly they can access it, and whether it will survive a defense challenge. They treat footage review as trial preparation, not operational intelligence.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Fast, secure access to footage with no IT friction or account provisioning delays"
+    context: "Prosecutors operate on aggressive case timelines. Waiting days for an account to be provisioned, a drive to be shipped, or a format to be converted is unacceptable. Footage must be shareable via authenticated secure link with zero setup time for the recipient."
+  - weight: 5/5 (Critical)
+    need: "Complete chain of custody documentation delivered with the footage"
+    context: "Defense attorneys will challenge footage admissibility. Every access event, every clip, every copy must have an unbroken, documented chain of custody that can be authenticated in court. Without this, the footage becomes a liability rather than evidence."
+  - weight: 4/5 (High)
+    need: "Ability to review footage quickly and identify key evidentiary moments"
+    context: "Prosecutors review dozens of pieces of footage across multiple cases simultaneously. Fast-forward/rewind with frame accuracy, timestamps visible during playback, and the ability to bookmark key moments reduce review time significantly."
+  - weight: 3/5 (Medium)
+    need: "Secure sharing with co-counsel, experts, and defense (for discovery) without creating uncontrolled copies"
+    context: "Case teams include co-counsel, victim advocates, and expert witnesses who need access. Defense attorneys need footage for Brady/Giglio disclosure. Sharing must be permission-controlled, auditable, and expire after use."
+  - weight: 2/5 (Low)
+    need: "Video preparation tools — clip segments, add exhibit numbering, export for courtroom display"
+    context: "Trial presentation requires curated clips, not raw recordings. Prosecutors need to extract key segments, add exhibit markers, and export in a format that plays reliably in courtroom AV systems."
+  - weight: 1/5 (Nice to have)
+    need: "Integration with case management software"
+    context: "Prosecutors use their own case management system, not the police department's. Links to BWC footage must be embeddable in case records rather than existing as disconnected files."
+```
+
+## User Context
+
+Office-based at the DA's office — separate from the police department's systems. Standard desktop workstation. Works under case deadline pressure with heavy caseloads. Receives footage from multiple agencies using different BWC platforms. Has no direct access to the evidence management system and depends entirely on what detectives or evidence technicians provide. Time to trial preparation is compressed. Not a technology specialist — expects evidence to arrive ready to use.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 4/10 — Legally sophisticated, not technically sophisticated. Will not spend time troubleshooting file formats, codec issues, or access failures. Expects evidence to work.
+risk_tolerance: 1/10 — Lowest possible for chain of custody. Will not use footage that has any ambiguity about provenance. A chain-of-custody gap means the footage doesn't exist for trial purposes.
+stress_level_during_use: 6/10 — Elevated under trial preparation pressure. Spikes when requested footage is unavailable or delayed close to trial date.
+decision_speed: Hours to days — Review footage deliberately. Make evidentiary decisions with colleagues. Not rushed but bound by statutory deadlines.
+adoption_attitude: External user — adopts whatever the department provides. Has no say in platform choice. Will give feedback if a platform makes their job harder.
+primary_motivation: Winning defensible prosecutions — footage that clearly establishes facts and withstands defense challenge.
+secondary_motivation: Speed and efficiency — time is scarce and caseloads are heavy. Anything that reduces review time is valuable.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Records request"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Severe time pressure"
+    impact: "Statutory deadlines for discovery disclosure are non-negotiable. Every delay in receiving or processing footage has direct legal consequences."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Managing multiple active cases with diverse evidence types. Body camera footage is one of many evidence streams requiring attention. Review tools must allow efficient, not exhaustive, viewing."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Prosecutors use the department's BWC platform only as needed, not daily. Platform must be intuitive without training — prosecutors will not take onboarding for a peripheral tool."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Felony assault case — trial in 3 weeks, discovery deadline in 5 days
+    goal: Review all BWC footage, identify key evidentiary clips, prepare Brady disclosure package for defense, and clip exhibits for trial presentation
+    current_pain: Footage arrives on a DVD or as a large download link; no built-in playback tools for frame-accurate review; clipping requires separate video software; discovery disclosure is a manual email with files attached
+    ideal_experience: Secure link provides immediate in-browser playback with timestamp overlay; bookmarking key moments takes 2 clicks; one-click disclosure package auto-generates with chain-of-custody documentation for defense
+
+  - trigger: Defense attorney challenges footage admissibility at suppression hearing
+    goal: Produce complete chain-of-custody documentation showing footage was never modified, access was logged, and the chain from recording to disclosure is unbroken
+    current_pain: Chain-of-custody documentation is maintained in the evidence system separately from the footage itself; must request documentation from the evidence technician under time pressure
+    ideal_experience: Each clip carries an embedded chain-of-custody certificate that is auto-generated by the system and verifiable without calling the evidence tech
+```
+
+## Anti-Goals
+
+- Does NOT want to receive footage without accompanying chain-of-custody documentation
+- Does NOT want to use formats that require conversion or special software for playback
+- Does NOT want to share footage via email attachments — too large, no access control
+- Does NOT want to provision accounts or navigate IT onboarding before accessing evidence
+
+## Domain Vocabulary
+
+`Brady material, Giglio, discovery disclosure, admissibility, chain of custody, suppression hearing, exhibit, trial preparation, authentication, foundation, co-counsel, defense discovery, statutory deadline, in limine, probative value, evidentiary hearing`
+
+## Wish List
+
+Send me a secure link. I click it, I'm watching footage with timestamps, I bookmark key moments. When I need to share with defense for disclosure, I generate an authenticated disclosure package with chain-of-custody documentation — no phone calls, no DVDs, no email attachments. The footage is already in a format I can play in the courtroom. And if a defense attorney challenges the footage, I print the custody certificate and the hearing is over.
+</script>
+
+<script type="text/template" id="tpl-vl-internal-affairs">
+# Persona: Internal Affairs / Professional Standards
+
+```yaml
+persona_id: internal_affairs
+role: Internal investigator of officer conduct and policy compliance
+classification: SECONDARY USER
+platform: Visual Labs
+icon: 🔏
+```
+
+## Who is this user?
+
+Investigates complaints against officers and policy violations using body camera footage as a primary evidence source. The defining truth about this persona: they need complete objectivity and cannot appear to have it influenced. Every access they make to footage is scrutinized — by officers' unions, command staff, attorneys, and oversight boards simultaneously. They are neither on the officer's side nor the complainant's side. They are on the evidence's side. Their access to footage must be secure, independent, and completely auditable.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Secure, independent access to footage without going through the officer's chain of command"
+    context: "IA must be able to access footage for an investigation without the subject officer or their supervisor being notified. If accessing footage requires the supervisor's approval, the investigation is compromised from the first step. Access must be direct, audited, and role-controlled."
+  - weight: 5/5 (Critical)
+    need: "Tamper-evident footage with provable integrity from recording to review"
+    context: "Any allegation that footage was altered, selectively edited, or withheld will collapse the investigation and expose the department to liability. Hash verification, unalterable access logs, and cryptographic integrity checks are the technical foundation of every IA investigation."
+  - weight: 4/5 (High)
+    need: "AI-assisted event detection — automatically flag use of force, activation gaps, and policy deviations"
+    context: "Reviewing hours of routine patrol footage looking for a 30-second policy violation is not sustainable. Automated flagging of high-priority events, activation gaps during critical incidents, and anomalous behavior patterns dramatically reduces investigation time."
+  - weight: 4/5 (High)
+    need: "Secure, isolated storage for footage under active investigation"
+    context: "Footage that is relevant to an IA investigation must be placed under hold immediately and stored in a location inaccessible to the subject officer, their supervisor, and anyone in their unit. Investigation security requires technical isolation, not just policy."
+  - weight: 3/5 (Medium)
+    need: "Multi-source investigation package — compile footage from multiple officers and fixed cameras for a complete incident picture"
+    context: "Most serious incidents involve multiple officers. IA needs to pull footage from all responding officers, correlate it chronologically, and identify inconsistencies between footage and officer statements."
+  - weight: 2/5 (Low)
+    need: "Automated pattern analysis — identify officers with anomalous activation rates or event frequencies"
+    context: "Early intervention means catching patterns before they become incidents. IA and professional standards units benefit from statistical flags that surface outlier behavior before a complaint drives the investigation."
+```
+
+## User Context
+
+Works in a separate unit from patrol, often physically isolated to preserve investigative independence. Uses a dedicated workstation with restricted system access. Investigations may span weeks or months. Interacts with officers, supervisors, complainants, oversight boards, and legal counsel. Every action taken during an investigation must be documentable and defensible. Operates under strict confidentiality requirements that may conflict with public records requests.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 6/10 — Detail-oriented investigator comfortable with evidence management tools. Not a developer but understands the importance of system logs, metadata, and forensic integrity.
+risk_tolerance: 1/10 — Absolute minimum. A compromised investigation — whether by footage tampering, improper access, or failure to preserve evidence — exposes the department to massive legal liability and can destroy trust in the oversight function.
+stress_level_during_use: 5/10 — Steady investigative pressure. Spikes on high-profile cases with community or media attention.
+decision_speed: Weeks to months — Investigations are deliberate. Evidence is assembled carefully before findings are issued.
+adoption_attitude: Requirement-driven adopter — Uses whatever the department deploys. Provides specific and demanding requirements when given input.
+primary_motivation: Objective investigation based on evidence — the footage tells the truth when witnesses won't.
+secondary_motivation: Department accountability and early intervention — identifying pattern problems before they become public scandals.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Records request"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Report/AAR on a mission/event"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Log incident"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "External organizational / political pressure"
+    impact: "IA investigators face pressure from multiple directions simultaneously — union representation for the officer, community advocates for accountability, command demanding resolution, and legal counsel managing liability. Maintaining procedural integrity under this pressure requires systemic support."
+  - factor: "Vigilance fatigue / monitoring fatigue"
+    impact: "Extended review of body camera footage during an investigation — often hours of footage per incident — causes attention drift. Key moments can be missed. Timeline tools and event flagging are essential."
+  - factor: "Confirmation bias risk"
+    impact: "Investigators may arrive at footage review with a preliminary hypothesis. System should present footage objectively and log what was reviewed and when, to demonstrate that the investigation followed the evidence."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Complaint alleges excessive force during an arrest — 3 officers were on scene
+    goal: Review all footage from all responding officers, correlate with witness accounts and officer statements, identify discrepancies
+    current_pain: Must request footage from the evidence tech while ensuring the subject officers don't know the investigation has started; no multi-camera timeline tool requires manual timestamp correlation; no tamper-evident log showing footage hasn't been accessed since the incident
+    ideal_experience: IA access is direct and logged separately from supervisory access; multi-camera timeline aligns all three feeds automatically; hash verification confirms footage hasn't been modified since recording; investigation workspace is isolated from operational systems
+
+  - trigger: Early intervention flag — statistical analysis shows officer has highest activation gap rate in department
+    goal: Review recent footage to determine if policy violations are occurring and decide whether coaching, discipline, or systemic issue
+    current_pain: Activation rate data is in a separate analytics dashboard; must cross-reference manually with complaint history; no way to quickly pull a sample of the officer's footage to review patterns
+    ideal_experience: Early intervention dashboard links statistical flag directly to the officer's recent footage; IA can review a representative sample without requesting files from evidence tech; investigation can begin quietly without officer notification
+```
+
+## Anti-Goals
+
+- Does NOT want to access footage through the subject officer's supervisor
+- Does NOT want to rely on assurances that footage hasn't been tampered with — needs cryptographic proof
+- Does NOT want to manually correlate multi-camera footage using spreadsheets and paper timelines
+- Does NOT want investigation access to generate notifications to the officer or their unit
+
+## Domain Vocabulary
+
+`IA, internal affairs, professional standards, complaint, allegation, investigation, chain of custody, hash verification, tamper-evident, early intervention, activation gap, use of force, sustained, unfounded, exonerated, administrative review, discipline, confidential, isolated storage, investigation package`
+
+## Wish List
+
+Access footage directly — no chain of command, no notifications, no one knows I pulled it until the investigation is complete. Show me cryptographic proof that nothing has been changed since it was recorded. Give me a timeline that syncs all the cameras from an incident so I can see exactly what happened without spending hours on manual correlation. And flag officers with anomalous patterns before a complaint arrives — the best investigation is the one that never becomes a public scandal.
+</script>
+
+<script type="text/template" id="tpl-vl-foia-officer">
+# Persona: Public Records / FOIA Officer
+
+```yaml
+persona_id: foia_officer
+role: Public records custodian responsible for processing and releasing footage under law
+classification: SECONDARY USER
+platform: Visual Labs
+icon: 📋
+```
+
+## Who is this user?
+
+Processes requests for body camera footage under public records law and must release footage in compliance with privacy, investigative privilege, and statutory exemption requirements. The defining truth about this persona: they are permanently caught between two legal obligations. The public has a right to records. The law also protects identities, ongoing investigations, juvenile faces, medical information, and undercover operations. Every release requires legally defensible decisions about what to release and what to redact — under deadline, at scale, with legal exposure on both sides.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Automated redaction tools — blur faces, license plates, and identifying information at scale"
+    context: "Redacting a 2-hour body camera recording frame by frame is a full day of work. Automated face and plate detection with one-click blur reduces a day to an hour. Without automation, FOIA offices are perpetually backlogged and legally exposed for delayed responses."
+  - weight: 5/5 (Critical)
+    need: "Statutory deadline tracking and request management workflow"
+    context: "Most states require response to public records requests within 5–10 business days. Managing 50+ simultaneous requests with varied deadlines, partial responses, and legal exemption documentation requires a workflow tool — not a spreadsheet and calendar reminders."
+  - weight: 4/5 (High)
+    need: "Audit trail for every redaction decision — what was redacted, by whom, citing which legal exemption"
+    context: "Every redaction is a legal determination that may be challenged. The basis for each redaction — privacy exemption, investigative privilege, ongoing prosecution, minor identity — must be logged with the specific statutory authority. This is the documentation for litigation."
+  - weight: 4/5 (High)
+    need: "Ability to release footage without releasing the original — only the redacted version"
+    context: "The original recording must be preserved with full integrity while the release copy has redactions applied. Any system that modifies the original to create the redacted version violates chain of custody and evidence integrity."
+  - weight: 3/5 (Medium)
+    need: "Coordination with IA, detective, and legal counsel on exemption determinations"
+    context: "Deciding whether footage is exempt because of an ongoing investigation requires input from IA or the detective unit. This coordination is currently done by phone and email, creating delays and undocumented decisions."
+  - weight: 2/5 (Low)
+    need: "Template-based denial and partial response letters with exemption citations"
+    context: "Drafting response letters citing specific statutory exemptions is repetitive legal writing. Templates that auto-populate with request details, footage identifiers, and exemption language reduce drafting time and improve legal consistency."
+```
+
+## User Context
+
+Administrative office environment — desk-based with standard workstation. Manages a queue of public records requests from journalists, attorneys, community members, and oversight organizations. Often the only person in the department responsible for this function. Operates under statutory deadline pressure and potential litigation exposure. Has little direct involvement with the operational side of the BWC program — receives finished footage and processes release requests against legal requirements.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 5/10 — Comfortable with administrative software and document management. Not a video editing specialist. Expects redaction tools to be point-and-click, not requiring video production expertise.
+risk_tolerance: 2/10 — Extremely low. Over-releasing protected information violates privacy laws and compromises investigations. Under-releasing without proper exemption documentation creates litigation risk. Both errors carry legal consequences.
+stress_level_during_use: 6/10 — Chronic moderate stress from deadline pressure and legal exposure. Spikes when high-profile requests arrive from journalists on breaking stories.
+decision_speed: Days — Processes requests methodically. Consults with legal counsel and investigators on exemption determinations. Bound by statutory response deadlines.
+adoption_attitude: Compliance-driven adopter — Adopts tools that help meet legal requirements. Values automation that reduces manual workload without adding legal risk.
+primary_motivation: Legal compliance on both sides of the obligation — release what must be released, protect what must be protected.
+secondary_motivation: Managing an overwhelming request volume with minimal staff and maintaining defensible documentation for every decision.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Records request"
+    frequency: "Every day"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Watch the video feeds"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Upload document"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Report on the program"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Frequently"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Severe time pressure"
+    impact: "Statutory FOIA deadlines are legally enforceable. Missing a deadline exposes the department to litigation. Deadline management must be built into the workflow, not tracked externally."
+  - factor: "Decision fatigue"
+    impact: "Processing dozens of requests with varied complexity leads to decision quality degradation. Template-based exemption decisions and automated redaction reduce the number of judgment calls per day."
+  - factor: "External organizational / political pressure"
+    impact: "High-profile requests from journalists covering use-of-force incidents create pressure from both media and command. FOIA officer must maintain procedural independence under competing pressures."
+  - factor: "Cognitive overload / information saturation"
+    impact: "Managing 50+ simultaneous requests at different stages of processing, each with different exemptions and legal timelines, is cognitively overwhelming without workflow management tools."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Media outlet requests all BWC footage from a high-profile arrest — statutory response deadline in 7 days
+    goal: Review footage for applicable exemptions, redact protected information, deliver compliant response with exemption documentation within deadline
+    current_pain: Manual review of hours of footage; redaction requires exporting to video software, applying blurs manually, and re-importing; exemption documentation is created in Word separately from the footage; response letter drafted from scratch
+    ideal_experience: Automated AI redaction applies face and plate blurs on first pass; FOIA officer reviews and confirms; system generates redacted copy while preserving original; response package includes footage, redaction log citing statutory authority, and auto-drafted response letter
+
+  - trigger: Attorney files suit challenging a prior FOIA denial — demands complete production records
+    goal: Produce documentation showing what was requested, what was released, what was withheld, why, and who made each decision
+    current_pain: Request history is in email; redaction decisions are undocumented; exemption citations exist only in the response letter; there is no audit trail of who accessed footage during processing
+    ideal_experience: System produces a complete request audit trail: date received, footage accessed, redactions applied with exemption citations, response sent, requester acknowledged — all in a single exportable compliance report
+```
+
+## Anti-Goals
+
+- Does NOT want to manually redact footage frame by frame
+- Does NOT want to manage statutory deadlines in a spreadsheet or calendar
+- Does NOT want to make undocumented exemption decisions that have no audit trail
+- Does NOT want to release a redacted version that modifies or touches the original evidence
+
+## Domain Vocabulary
+
+`FOIA, public records request, statutory exemption, redaction, privacy protection, investigative privilege, ongoing investigation, minor identity, facial blur, license plate, response deadline, partial response, denial letter, exemption citation, litigation hold, audit trail, compliance documentation, requester`
+
+## Wish List
+
+Automated redaction that I just review and confirm — stop making me blur faces frame by frame. A request queue that tracks deadlines automatically and tells me what's due today. Every redaction decision logged with the statutory exemption code, not in a separate Word document. When I send a response, the release version and the exemption log are both attached. If we're ever sued over a denial, I can produce the entire decision trail in 5 minutes.
+</script>
+
+<script type="text/template" id="tpl-vl-training-officer">
+# Persona: Training Officer / Academy Staff
+
+```yaml
+persona_id: training_officer
+role: Officer development specialist using footage for training and skills improvement
+classification: SECONDARY USER
+platform: Visual Labs
+icon: 🎓
+```
+
+## Who is this user?
+
+Uses body camera footage as a primary tool for skills development, scenario-based training, and post-incident review. The defining truth about this persona: they see the same footage everyone else sees, but through a completely different lens. Where IA sees policy compliance and supervisors see liability, training officers see teachable moments. Every use-of-force event, every de-escalation success, every tactical error is raw material for making officers better. They need to find, clip, annotate, and organize footage for training — at scale, across the department.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Clip library — build and maintain a curated repository of training scenarios from real footage"
+    context: "The most powerful training tool is real footage of real situations. Training officers need to build a searchable library of clips tagged by scenario type, skill domain, and training objective. Without organization, clips get lost in email attachments and shared drives. The library is the entire value of this persona's use of the system."
+  - weight: 4/5 (High)
+    need: "Ability to anonymize officer identity in training clips"
+    context: "Using real footage for training requires protecting the identity of the officer in the clip — especially for anything involving policy errors or use of force. Officers are more receptive to training feedback when the clip isn't identifiable. Face blur for training purposes is distinct from FOIA redaction."
+  - weight: 4/5 (High)
+    need: "Fast search by scenario type, skill domain, or outcome"
+    context: "When building a de-escalation training module, the training officer needs to quickly find all footage tagged as de-escalation scenarios — not search through untagged recordings. Tagging at ingestion and searchable clip libraries are the foundation of effective training use."
+  - weight: 3/5 (Medium)
+    need: "Annotation and commentary tools — overlay training notes on footage"
+    context: "Showing a clip without context is less effective than showing a clip with timestamped coaching notes visible during playback. 'Notice at 0:42 — officer positions themselves perpendicular to the exit' is the kind of annotation that makes footage useful for training."
+  - weight: 2/5 (Low)
+    need: "Secure sharing with academy instructors, regional training centers, and partner agencies"
+    context: "Training materials are often shared across agencies in a region. De-identified clips shared with partner agencies or ILEA programs expand the training impact without privacy exposure."
+  - weight: 1/5 (Nice to have)
+    need: "Track which officers have viewed specific training clips and whether they acknowledged the content"
+    context: "Documenting that an officer viewed and acknowledged specific training content is valuable for progressive discipline documentation and liability management."
+```
+
+## User Context
+
+Works in a training unit or academy — may be physically separate from the operational precinct. Uses a workstation with good display quality for footage review. Building training modules requires extended time with footage: reviewing, selecting, clipping, and annotating. Access to operational footage must be read-only and de-identification capabilities must be available without going through IA or evidence tech. Interaction with the BWC system is periodic but intensive when building curriculum.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 6/10 — Comfortable building training materials and using presentation software. Will invest time learning a tool that clearly improves training quality. Less comfortable with evidence system administration.
+risk_tolerance: 3/10 — Moderately risk-averse. Using footage improperly for training — without anonymization or proper authorization — creates liability for the department and undermines officer trust.
+stress_level_during_use: 3/10 — Low to moderate. Training development is planned work on stable timelines, not reactive incident management.
+decision_speed: Days to weeks — Builds curriculum deliberately. Selects footage through a review and approval process.
+adoption_attitude: Enthusiastic adopter — Training officers are often early advocates for BWC programs specifically because of training value. Will champion tools that make the training use case work well.
+primary_motivation: Improving officer skills and reducing liability through scenario-based training on real events.
+secondary_motivation: Building a sustainable, searchable training library that outlasts individual memory and improves with each new incident.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Screenshare drone video"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Report/AAR on a mission/event"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "High ambient noise"
+    impact: "Classroom and training room environments can be noisy. Training footage played back in group settings requires good audio and subtitle support for key moments."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Vigilance fatigue / monitoring fatigue"
+    impact: "Extended footage review while searching for training clips is cognitively draining. Tagging and categorization at ingestion reduces review burden by making relevant clips findable without exhaustive searching."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Training curriculum development is periodic — not daily. System must be re-learnable quickly between training module builds."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Building annual de-escalation training curriculum
+    goal: Compile 8–10 real-incident clips that illustrate effective and ineffective de-escalation techniques
+    current_pain: No searchable tag system for training scenarios; must review incident logs to identify candidate events, then request footage from evidence tech for each; officer identities visible in footage without ability to anonymize; assembly of final training module requires external video software
+    ideal_experience: Search by tag "de-escalation" returns a library of pre-tagged clips; training officer reviews and selects; one-click anonymization blurs officer faces; annotated training package is shareable directly to the classroom display or LMS
+
+  - trigger: Critical use-of-force incident occurs — department wants after-action training module within 2 weeks
+    goal: Build a training module around the incident that captures tactical decisions, policy compliance points, and improvement opportunities without exposing officer identity
+    current_pain: Must coordinate with IA and supervisor to get access to footage of a recent incident; anonymization requires exporting and using video editing software; publishing to the training platform requires additional steps
+    ideal_experience: Training officer requests access to the incident footage with anonymization permission; system creates a de-identified working copy; annotated clip package is published directly to the training module platform
+```
+
+## Anti-Goals
+
+- Does NOT want to build a training library on an external hard drive or shared folder
+- Does NOT want to use footage that exposes officer identity without their consent
+- Does NOT want to coordinate through IA every time footage is needed for training
+- Does NOT want to use separate video editing software for anonymization and annotation
+
+## Domain Vocabulary
+
+`after-action review, AAR, scenario-based training, de-escalation, use of force, tactical decision, clip library, anonymization, face blur, training module, training objective, curriculum, LMS, acknowledgment, ILEA, FTO, in-service training, roll call training`
+
+## Wish List
+
+Give me a searchable library of real incidents, tagged by scenario type, with officer faces already blurred for training use. When a critical incident happens, I want to build a training module from it within a week — not a month. I should be able to annotate clips directly in the system, publish them to our training platform, and track which officers have viewed them. The best training material is real, recent, and relevant — I just need the tools to find it and use it safely.
+</script>
+
+<script type="text/template" id="tpl-vl-it-admin">
+# Persona: IT Administrator
+
+```yaml
+persona_id: it_admin_vl
+role: Technology administrator responsible for BWC system infrastructure and fleet management
+classification: SECONDARY USER
+platform: Visual Labs
+icon: 🖥️
+```
+
+## Who is this user?
+
+Deploys, configures, and maintains the body camera hardware fleet and backend software systems. The defining truth about this persona: they own the uptime. When a camera fails to upload, when a firmware update breaks connectivity, when a storage system goes offline, every investigation, prosecution, and compliance audit is at risk. They are not users of the footage — they are the infrastructure that makes footage possible. They need fleet management tools, not evidence review tools.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Fleet management dashboard — real-time status of every camera in the department"
+    context: "200 cameras deployed across 3 shifts. IT needs to know at a glance which cameras are online, which are failing to upload, which batteries are degraded, and which haven't synced in more than 24 hours. Discovering a camera fleet problem through a complaint or a supervisor's phone call is a failure of visibility."
+  - weight: 5/5 (Critical)
+    need: "Centralized firmware and software update management"
+    context: "Deploying a firmware update to 200 cameras individually is not operationally feasible. Updates must be stageable, rollable, and deployable over-the-air during off-peak hours without requiring manual intervention per device. Forced updates in the middle of a shift that interrupt recording are operationally unacceptable."
+  - weight: 4/5 (High)
+    need: "User provisioning and role-based access control management"
+    context: "Adding a new officer, changing a role, or revoking access when an officer separates must be fast and reliable. Role-based access control must map to department hierarchy (officer, supervisor, IA, command, external) with predictable, auditable permission changes."
+  - weight: 4/5 (High)
+    need: "Integration with department identity systems (Active Directory / SSO)"
+    context: "Standalone user management is a maintenance burden and a security risk. Integration with the department's existing identity infrastructure (Active Directory, SAML, SSO) ensures access is tied to employment status and removes the risk of departed employee access."
+  - weight: 3/5 (Medium)
+    need: "Storage capacity management and automated tiering"
+    context: "Evidence storage is expensive and grows continuously. IT needs forecasting tools, automated tiering to cold storage for aged footage, and retention policy integration that purges eligible footage without manual intervention."
+  - weight: 2/5 (Low)
+    need: "Diagnostic tools for connectivity and sync failure investigation"
+    context: "When a camera fails to upload, IT needs to understand why: network issue, hardware failure, docking station malfunction, or software bug. Without diagnostic tooling, every failure investigation requires on-site physical inspection."
+```
+
+## User Context
+
+Works in an IT office or data center environment. Manages the BWC system as one of many department technology systems alongside CAD, RMS, network infrastructure, and mobile devices. Has direct access to backend systems that other personas cannot reach. Interacts with the BWC vendor's technical support for escalated issues. May also be responsible for physical docking station installation, network configuration, and CJIS compliance for the system.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 9/10 — Full technical capability. Understands networking, storage, directory services, APIs, and device management. Evaluates tools based on integration capabilities and operational reliability, not UI design.
+risk_tolerance: 3/10 — Risk-averse for system stability and compliance. One bad firmware rollout or storage failure has department-wide impact. Changes are tested in staging before production deployment.
+stress_level_during_use: 4/10 — Steady operational management. Spikes during outages, critical incidents requiring immediate footage access, and audit preparation.
+decision_speed: Hours to days — Infrastructure changes are planned, tested, and change-managed. Emergency responses to outages are faster.
+adoption_attitude: Requirements-driven adopter — Evaluates platforms on technical merit, integration capability, and vendor support quality.
+primary_motivation: System uptime and reliability — every failed camera is a potential evidentiary gap and a complaint from a supervisor.
+secondary_motivation: CJIS compliance and security — the BWC system stores sensitive law enforcement data with federal compliance requirements.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Create and Manage users"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Update apps + firmware"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Log drone maintenance"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Report on the program"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+  - feature: "Watch the video feeds"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Everyday"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Cognitive overload / information saturation"
+    impact: "Managing multiple department technology systems simultaneously. BWC system alerts must be clear and prioritized — a low-battery warning on a camera should not look the same as a complete upload failure on multiple cameras."
+  - factor: "Decision fatigue"
+    impact: "Managing many small operational decisions daily. Automation that reduces manual intervention (auto-updates, auto-tiering, auto-provisioning from HR feeds) dramatically reduces cognitive load."
+  - factor: "External organizational / political pressure"
+    impact: "IT is held responsible for system failures that affect investigations and prosecutions. High-profile evidentiary gaps caused by technical failures become IT accountability events."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Pre-shift rollcall — supervisor reports 3 cameras didn't upload last night
+    goal: Diagnose the upload failures, restore connectivity, and confirm footage is captured before officers go on shift
+    current_pain: No centralized visibility into upload status by camera serial number; must log into the backend console and filter through sync logs; three different cameras could have three different failure causes with no way to triage remotely
+    ideal_experience: Fleet dashboard shows exactly which 3 cameras failed with failure code (network, hardware, docking station); one-click diagnostic shows last sync attempt and error; remote reset and re-sync initiated from dashboard without touching the physical device
+
+  - trigger: New firmware version released — need to deploy to all 200 cameras without interrupting active shift recording
+    goal: Stage and deploy firmware update during off-peak hours with automatic rollback if failure rate exceeds threshold
+    current_pain: Update must be initiated camera by camera or in small batches; no rollback mechanism if new firmware causes issues; no deployment status dashboard showing which cameras have updated; rogue officers who never dock delay deployment for months
+    ideal_experience: Scheduled deployment window targets all cameras not currently recording; deployment dashboard shows real-time adoption rate; automatic rollback triggers if error rate exceeds 5%; post-deployment report shows coverage percentage with list of remaining non-compliant cameras
+```
+
+## Anti-Goals
+
+- Does NOT want to manage firmware updates through manual per-device processes
+- Does NOT want to discover camera fleet problems through complaints or litigation
+- Does NOT want to maintain a separate user directory that is not synchronized with HR/AD
+- Does NOT want CJIS compliance documentation to require manual assembly at audit time
+
+## Domain Vocabulary
+
+`fleet management, firmware, OTA update, docking station, CJIS, SSAE, Active Directory, SSO, SAML, role-based access control, RBAC, storage tiering, cold storage, sync failure, upload queue, device health, battery lifecycle, audit log, compliance report, staging environment`
+
+## Wish List
+
+I need a single pane of glass for the entire camera fleet — every device, its battery level, last sync time, and firmware version. Updates deploy themselves during off-shift hours and roll back automatically if something breaks. New officers get access provisioned from the HR feed the day they're hired and revoked the day they leave. CJIS audit prep generates automatically — I don't spend two weeks assembling evidence before an inspection. When something breaks, I know about it before the supervisor calls me.
+</script>
+
+<script type="text/template" id="tpl-vl-judge">
+# Persona: Judge / Court Personnel
+
+```yaml
+persona_id: judge
+role: Judicial officer and court staff responsible for accepting and playing video evidence
+classification: TERTIARY USER
+platform: Visual Labs
+icon: 🏛️
+```
+
+## Who is this user?
+
+Receives body camera footage as evidence presented in court proceedings and must be able to authenticate, play, and evaluate it in a courtroom setting. The defining truth about this persona: they are a passive recipient of whatever format law enforcement provides. They don't use the evidence system — they experience the product of it. Their requirements are narrow but absolute: footage must play without technical failure, must be authenticated, and must display timestamps clearly. A video that won't play in court is evidence that doesn't exist.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Reliable playback in standard courtroom AV environments without special software"
+    context: "Courtrooms run standardized AV systems managed by court IT. Evidence presented in proprietary formats that require the department's software or plugins will not play. MP4 or similar universal formats, playable in standard browsers or Windows Media Player, are the baseline requirement."
+  - weight: 5/5 (Critical)
+    need: "Clear, visible timestamps and metadata displayed during playback"
+    context: "Date, time, officer identifier, and incident ID must be visible on-screen during playback — not just in file metadata. The jury must see the timestamp to give the evidence its temporal context. Missing or inconsistent timestamps are grounds for authenticity challenges."
+  - weight: 4/5 (High)
+    need: "Authentication documentation — chain of custody, hash verification, recording officer identity"
+    context: "Before footage is admitted, foundation must be established: who recorded it, when, under what circumstances, and that it has not been altered. This documentation must accompany the evidence package in a form that can be read into the record."
+  - weight: 3/5 (Medium)
+    need: "Ability for court personnel to manage evidence playback without attorney assistance"
+    context: "Court clerks managing exhibits during trial should be able to cue, play, pause, and navigate to specific timestamps without requiring the presenting attorney to operate the system. Courtroom control requires intuitive playback that any clerk can use."
+  - weight: 2/5 (Low)
+    need: "Audio clarity and volume normalization"
+    context: "Body camera audio is often captured in ambient noise environments. Courtroom playback of muffled or inconsistent audio requires normalization. Inaudible key exchanges undermine the probative value of otherwise usable footage."
+  - weight: 1/5 (Nice to have)
+    need: "Ability to accept and authenticate footage from multiple agencies and platforms"
+    context: "Courts hear cases involving footage from multiple law enforcement agencies using different BWC platforms. A common authentication standard would reduce the per-case foundation-laying burden."
+```
+
+## User Context
+
+Courtroom environment — bench, clerk's station, and counsel tables. Standard court AV systems that vary significantly by jurisdiction and building age. Court personnel interact with evidence only in the controlled context of a proceeding. Not a technology user; expects submitted evidence to conform to court requirements, not the reverse. Technical issues during trial are highly disruptive to proceedings.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 2/10 — Not a technology user. Applies legal standards to evidence, not technical evaluation. Expects vendors and law enforcement to ensure format compliance before court.
+risk_tolerance: 4/10 — Moderate. Will exclude evidence that doesn't meet authentication requirements. Frustrated but not threatened by technical failures — they just exclude the evidence.
+stress_level_during_use: 3/10 — Low during routine proceedings. Elevated when technical failures disrupt trial proceedings and require continuances.
+decision_speed: Immediate to days — Evidentiary rulings are made from the bench in real time. Authentication challenges are briefed.
+adoption_attitude: Non-adopter — Does not adopt tools. Applies existing standards. Format requirements come from court rules, not preference.
+primary_motivation: Fair legal review — evidence must be authentic, playable, and interpretable to serve justice.
+secondary_motivation: Efficient proceedings — technical failures that require continuances waste court resources and delay justice.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Confined or cramped space"
+    impact: "Courtrooms have fixed AV setups. Evidence must conform to existing infrastructure — HDMI inputs, standard display resolutions, and common media players. There is no opportunity to reconfigure the courtroom for evidence."
+  - factor: "High ambient noise"
+    impact: "Courtroom ambient noise and poor room acoustics can make body camera audio — already noisy — nearly inaudible. Audio normalization and captioning support are critical for fair proceedings."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Court personnel do not use the BWC evidence system. They receive a file or a link. Any interaction with the platform must be entirely intuitive — they will not receive training."
+  - factor: "Severe time pressure"
+    impact: "Technical failures during trial cause delays that affect the entire court docket. A video that won't play results in an immediate continuance request and wasted court resources."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Prosecution presents BWC footage as evidence in a felony trial
+    goal: Authenticate the footage, play the relevant clips clearly for the jury, and rule on defense authenticity challenge
+    current_pain: Evidence arrives as a proprietary file format that requires the department's software; courtroom AV can't play it; trial is continued; when re-submitted in MP4, there are no visible timestamps on screen; authentication documentation is verbal, not written
+    ideal_experience: Evidence arrives as a standard MP4 with timestamps burned into the frame, accompanied by a one-page chain-of-custody certificate that can be read into the record; plays immediately on courtroom AV without any software installation
+
+  - trigger: Defense attorney challenges footage authenticity — claims editing at 14:23:07
+    goal: Review the chain-of-custody record and hash verification to rule on the challenge at the bench
+    current_pain: Authentication documentation is not provided with the evidence; must request it from the prosecution; prosecution calls evidence tech; proceeding halted while documentation is located
+    ideal_experience: Chain-of-custody certificate accompanying the footage includes hash verification timestamp confirming no modifications; ruling is made from the record, not by phone call to the evidence room
+```
+
+## Anti-Goals
+
+- Does NOT want to install software to play evidence
+- Does NOT want to make authentication rulings without documentation in the record
+- Does NOT want to continue proceedings because evidence won't play on courtroom equipment
+- Does NOT want to hear foundation testimony about chain of custody that should be in written documentation
+
+## Domain Vocabulary
+
+`admission of evidence, authentication, foundation, chain of custody, hash, exhibit, suppression hearing, in limine, authenticity challenge, probative value, prejudicial, courtroom AV, stenographer record, ruling from the bench, continuance, discovery`
+
+## Wish List
+
+Evidence that works the first time. A file that plays on our AV system without any setup. Timestamps burned into the video frame so the jury can see them. A one-page authentication certificate that I can enter into the record without calling witnesses to testify about metadata. If a defense attorney challenges the footage, I have the hash verification in the record and we move on. Technology should never be the reason a verdict is delayed.
+</script>
+
+<script type="text/template" id="tpl-vl-oversight-board">
+# Persona: Civilian Oversight Board
+
+```yaml
+persona_id: oversight_board
+role: Independent civilian reviewer assessing officer conduct and department accountability
+classification: TERTIARY USER
+platform: Visual Labs
+icon: 👥
+```
+
+## Who is this user?
+
+Independently reviews body camera footage in the context of complaints, use-of-force incidents, and systemic accountability assessments. The defining truth about this persona: they are outside the organization but inside the accountability process. They have the authority to review — but often not the technical access. Their credibility depends on independence, and their effectiveness depends on actually being able to see the footage they're entitled to review. A permission system that treats them like the public is an accountability failure.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Permission-based access that grants review rights without operational system access"
+    context: "Oversight board members need to review specific footage for specific complaints without having access to unrelated investigations, officer information, or system administration functions. Granular, case-scoped access grants are the technical requirement for independent oversight to function."
+  - weight: 4/5 (High)
+    need: "Clear, complete case context — what happened, who was involved, what policies apply"
+    context: "Board members reviewing footage without context cannot make meaningful accountability determinations. Each review package should include the relevant incident report, officer narrative, applicable policy provisions, and the complaint being reviewed — not just a raw video file."
+  - weight: 4/5 (High)
+    need: "Secure, audited access that does not compromise investigation integrity"
+    context: "Board access must be logged and audited to demonstrate independence. Any suggestion that board members had access to information that could compromise an active investigation undermines both the investigation and the oversight function."
+  - weight: 3/5 (Medium)
+    need: "Aggregate trend data — complaint rates, activation compliance, use-of-force patterns over time"
+    context: "Individual case review is less valuable than pattern analysis. Boards need access to de-identified aggregate data that reveals systemic issues — not just individual incidents — without requiring access to individual officer records or ongoing investigations."
+  - weight: 2/5 (Low)
+    need: "Clear escalation path when access is denied or footage is unavailable"
+    context: "When boards request footage and are told it's unavailable or exempt, they need a documented process for challenging that determination — not just a phone call that goes unresolved."
+  - weight: 1/5 (Nice to have)
+    need: "Board-facing reporting portal with accountability metrics"
+    context: "Boards that receive regular data on BWC compliance, use-of-force rates, and complaint resolution timelines can be proactive rather than reactive. A dedicated reporting portal reduces the board's dependence on the department for data."
+```
+
+## User Context
+
+Meeting environment and home/office use — not a law enforcement facility. Board members are community volunteers, attorneys, academics, or advocates with varied technical backgrounds. Access must be browser-based, secure, and require no specialized software or configuration. Reviews are episodic — triggered by complaints or scheduled review cycles, not daily use. Technical support is limited; the interface must be self-explanatory.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 3/10 — Highly varied. Ranges from attorneys and academics who are comfortable with document management to community members who are not regular computer users. Must accommodate the lowest-technical-proficiency member.
+risk_tolerance: 4/10 — Moderate. Takes the review responsibility seriously. Concerned about both over-access (seeing things they shouldn't) and under-access (being blocked from legitimate review). Both compromise the board's function.
+stress_level_during_use: 4/10 — Elevated during high-profile complaint reviews with community attention. Low during routine access and pattern review.
+decision_speed: Weeks — Board review processes are deliberate, often involving subcommittees and written findings.
+adoption_attitude: Requirement-driven external user — has no choice in platform. Will give feedback to the department if access is inadequate.
+primary_motivation: Independent accountability — ensuring that officer conduct is reviewed by someone outside the chain of command.
+secondary_motivation: Community trust — demonstrating to the community that independent review is real, not performative.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Report on the program"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Frequently"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Board members access footage episodically — months may pass between uses. Interface must be usable without any recall of training. Self-explanatory navigation and contextual help are required."
+  - factor: "Confirmation bias risk"
+    impact: "Board members arrive at reviews with community perspectives that may predispose them toward particular conclusions. Objective presentation of footage with contextual information — not just raw video — supports balanced review."
+  - factor: "External organizational / political pressure"
+    impact: "Boards operate in politically charged environments. Decisions attract scrutiny from both community advocates and department unions. Documented, auditable review processes protect board integrity."
+  - factor: "Vicarious trauma / disturbing content"
+    impact: "Reviewing use-of-force footage, especially involving injury or death, has psychological impact on civilian reviewers who are not law enforcement professionals. Access support and context materials are important."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Complaint filed by community member alleging excessive force — board schedules review
+    goal: Access the complete footage package for the incident, review in context of applicable policy, and prepare written findings
+    current_pain: Department must manually export footage and share via email; no incident context is provided with the footage; board members receive a raw video file without timestamps, incident report, or policy reference; access is not audited
+    ideal_experience: Board receives a scoped, authenticated access link to the specific incident package — footage, incident report, relevant policy provisions, and complaint text; viewing access is logged automatically; board can submit written findings through the same portal
+
+  - trigger: Annual review cycle — board requests aggregate compliance data for the year
+    goal: Analyze BWC activation rates, use-of-force corroboration, complaint trends, and resolution timelines to identify systemic issues
+    current_pain: Must formally request a data report from the department, which arrives as a PDF or spreadsheet days or weeks later; no ability to filter or explore the data independently
+    ideal_experience: Board-facing analytics portal provides real-time aggregate data with filtering by time period, unit, and incident type — no request required, no waiting, no dependence on department staff to prepare reports
+```
+
+## Anti-Goals
+
+- Does NOT want access that extends beyond the specific cases they are reviewing
+- Does NOT want to receive footage without accompanying context — policy, incident report, complaint
+- Does NOT want to be treated as a public FOIA requester when they have independent statutory review authority
+- Does NOT want aggregate accountability data to require a formal request to the department
+
+## Domain Vocabulary
+
+`civilian oversight, independent review, accountability, complaint review, use of force, policy compliance, activation rate, aggregate data, systemic analysis, scoped access, audit trail, board findings, written determination, community trust, transparency`
+
+## Wish List
+
+Give me access that's real, not performative. Scoped to exactly the cases I'm reviewing — nothing more, nothing less. When I open a case, I see the footage and the context: the complaint, the incident report, the policy that was or wasn't followed. My access is logged so there's no question about what I saw and when. For the annual review, I have a dashboard that shows me the whole picture — activation rates, complaint trends, UOF data — without having to ask the department to compile it.
+</script>
+
+<script type="text/template" id="tpl-vl-private-security">
+# Persona: Private Security Officer
+
+```yaml
+persona_id: private_security
+role: Non-sworn security professional using body cameras for incident documentation
+classification: TERTIARY USER
+platform: Visual Labs
+icon: 🛡️
+```
+
+## Who is this user?
+
+A non-sworn security professional deployed at commercial, retail, residential, or institutional properties who uses body cameras to document incidents, protect against liability, and deter misconduct. The defining truth about this persona: they have all the incident exposure of law enforcement with a fraction of the budget, training, and system support. They need affordable, simple hardware that works reliably — not an enterprise evidence management platform designed for a 500-officer department.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Affordable hardware that meets basic quality and reliability standards"
+    context: "Private security operates on thin budgets — often $20–30/hour labor with no dedicated technology budget. Camera cost, subscription cost, and storage cost determine whether the program exists at all. Enterprise-priced solutions are simply not viable. Hardware must be affordable without sacrificing basic reliability and video quality."
+  - weight: 5/5 (Critical)
+    need: "Simple, one-touch activation and automatic upload"
+    context: "Private security officers typically have minimal technical training. Camera operation must be as simple as pressing one button to record. End-of-shift docking that auto-uploads removes any post-shift technical burden from non-technical staff."
+  - weight: 4/5 (High)
+    need: "Fast retrieval of footage when an incident requires documentation for a client, police, or insurance"
+    context: "The primary value of body cameras in private security is documentation: insurance claims, client incident reports, police cooperation, and internal reviews. Footage must be retrievable by date and officer within minutes — not hours."
+  - weight: 3/5 (Medium)
+    need: "Basic access control — supervisor can review officer footage without sharing admin credentials"
+    context: "Security companies have supervisors and officers with different access needs. The supervisor should be able to review an officer's footage without having full admin access. Role-based access, even basic two-tier access, is required."
+  - weight: 2/5 (Low)
+    need: "Ability to share footage clips with clients, police, or insurance representatives"
+    context: "When an incident occurs on a client property, the client often wants footage. Police responding to a crime may need it immediately. Secure shareable links are far more practical than emailed files or physical media."
+  - weight: 1/5 (Nice to have)
+    need: "Basic compliance reporting — recording hours, activation events, officer deployment"
+    context: "Security companies billing clients on a per-hour or per-officer model benefit from documentation of actual deployment. Basic activity reports support billing verification and contract compliance."
+```
+
+## User Context
+
+Deployed at a fixed post or mobile patrol — typically operating alone or in pairs. Access to technology is limited; most interaction with the camera is hardware-only (press record, dock to upload). Supervisors review footage on a smartphone or tablet, not a workstation. Budget constraints dominate every technology decision. The organization may have 5 officers or 500 — most are small businesses without dedicated IT staff.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 3/10 — Minimal technical training. Comfortable with smartphones and basic apps. Not comfortable with web portals, evidence management terminology, or multi-step workflows.
+risk_tolerance: 5/10 — Moderate. Cameras exist primarily for liability protection — footage is a defensive tool. Officers are motivated to capture incidents but not to manage complex software.
+stress_level_during_use: 6/10 — Camera activation happens during security incidents — confrontations, trespassing, theft events. Stress is real but less acute than law enforcement life-safety situations.
+decision_speed: Seconds — Activation happens in the moment. Post-incident footage retrieval may happen same-day or days later.
+adoption_attitude: Pragmatic adopter — Adopts affordable tools that work simply. Will abandon tools that require too much management.
+primary_motivation: Liability protection and incident documentation — the camera is evidence that protects both the officer and the company.
+secondary_motivation: Deterrence — visible cameras reduce incident frequency.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Stream Video (Visual Labs)"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Every day"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Log incident"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "High ambient noise"
+    impact: "Security posts at events, retail, or transportation hubs are loud. Audio cues for recording status are unreliable. Visual LED indicators are the primary status feedback mechanism."
+  - factor: "Low light / darkness"
+    impact: "Overnight security shifts and parking lot coverage require reliable night recording. Camera night vision quality directly affects incident documentation value."
+  - factor: "Extreme heat"
+    impact: "Outdoor posts in summer create device overheating risk. Cameras must be rated for extended outdoor use."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "One-handed operation"
+    impact: "Security officers may be managing a situation with both hands partially occupied. Camera activation must be achievable single-handedly."
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Outdoor winter posts require gloves. Hardware button activation is more reliable than touchscreen activation."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Security confrontations can escalate rapidly. Camera activation must be habituated — a single, unmistakable motion under stress."
+  - factor: "Unfamiliarity with system / infrequent use"
+    impact: "Footage retrieval may happen days after an incident. System must be findable and usable without retraining."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Shoplifting confrontation escalates to assault at a retail client — police are called
+    goal: Provide responding officers with footage of the incident immediately at scene
+    current_pain: Footage is on the camera but hasn't uploaded yet; officer doesn't know the web portal login; supervisor is not on site; police are waiting
+    ideal_experience: Camera auto-uploads during any WiFi connection; supervisor receives notification of incident-tagged clip; shares a secure link with responding officer via text within 2 minutes
+
+  - trigger: Client requests incident report with supporting footage after a property damage claim
+    goal: Retrieve and deliver footage of the incident to the client for their insurance claim within 24 hours
+    current_pain: Officer who recorded it doesn't know how to retrieve footage from the system; supervisor must log in, find the recording by date and officer, export a file, and email it — manual process that takes hours
+    ideal_experience: Supervisor searches by officer and date, clips the relevant 5 minutes, and sends a secure view-only link to the client with one click; no file download or email attachment required
+```
+
+## Anti-Goals
+
+- Does NOT want enterprise pricing designed for a 500-officer agency
+- Does NOT want officers to need technical training to operate the camera or retrieve footage
+- Does NOT want footage to require specialized software for clients or police to view
+- Does NOT want complex administration that requires dedicated IT staff the company doesn't have
+
+## Domain Vocabulary
+
+`incident documentation, trespassing, use of force, detainment, liability, insurance claim, client report, post orders, shift report, activation, dock, upload, sharing link, footage request, confrontation, deterrence`
+
+## Wish List
+
+Hardware that costs less than a radio and software that doesn't require an IT department. One button to record, dock to upload. When an incident happens, my supervisor pulls the footage in 2 minutes and sends a link to whoever needs it. Police, clients, insurance adjusters — they all click the link and watch it without downloading anything or creating an account. Simple enough that any officer can use it on day one with five minutes of training.
+</script>
+
+<script type="text/template" id="tpl-vl-ems">
+# Persona: EMS / Paramedic
+
+```yaml
+persona_id: ems_paramedic
+role: Emergency medical services provider documenting patient encounters with body cameras
+classification: TERTIARY USER
+platform: Visual Labs
+icon: 🚑
+```
+
+## Who is this user?
+
+A paramedic or EMT using body cameras to document patient encounters for medical-legal protection, quality assurance, and training. The defining truth about this persona: their use case exists at the intersection of HIPAA and evidence management — two regulatory frameworks with conflicting requirements. Body camera footage in EMS is not primarily about accountability in the law enforcement sense; it's about documenting patient care, protecting against liability, and improving clinical quality. Every system that treats EMS footage like police footage creates HIPAA exposure.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "HIPAA-compliant storage and access controls — patient health information must be protected"
+    context: "Every frame of EMS body camera footage containing a patient is Protected Health Information (PHI) under HIPAA. Storage must be encrypted, access must be role-based and auditable, and sharing must require patient authorization or a valid HIPAA exception. A system that treats EMS footage like routine police footage without PHI controls creates catastrophic compliance exposure."
+  - weight: 5/5 (Critical)
+    need: "Simple activation that doesn't interrupt patient care delivery"
+    context: "Paramedics cannot pause patient care to activate a camera. Hands-free, voice-activated, or automatic scene-triggered activation is the only viable option. Any workflow that requires a manual multi-step process during active patient care will not be used."
+  - weight: 4/5 (High)
+    need: "Restricted access — patient encounter footage visible only to clinical QA and legal, not general personnel"
+    context: "Unlike law enforcement BWC footage which flows through evidence management, EMS footage should be accessible to QA officers and clinical supervisors under clinical review protocols — not to dispatchers, administrators, or anyone without a treatment-related need to know."
+  - weight: 3/5 (Medium)
+    need: "Integration with patient care report (PCR) systems"
+    context: "The footage of a patient encounter becomes more valuable when linked to the corresponding PCR — medication administration, vital signs, interventions, and outcomes. Side-by-side review of footage and PCR data is the gold standard for clinical QA."
+  - weight: 2/5 (Low)
+    need: "Automated redaction for footage used in training — remove identifiable patient information"
+    context: "EMS uses de-identified footage for training and quality improvement. Any footage used outside of clinical QA or legal review must have identifiable patient information removed. Automated HIPAA-compliant redaction for training use is a high-value feature."
+  - weight: 1/5 (Nice to have)
+    need: "Scene audio capture with medical-grade quality for procedure documentation"
+    context: "Documenting verbal patient consent, reported symptoms, and communication during procedures is valuable for both QA and legal defense. Audio quality adequate for clinical review — not just field communication — is a differentiating feature."
+```
+
+## User Context
+
+Active emergency scene — ambulance, patient residence, or emergency department. Physical demands of patient care are the primary focus; camera interaction is a fraction of cognitive load. Access to footage happens primarily in QA review at the EMS agency office or hospital, not in the field. HIPAA compliance is an organizational obligation that individual paramedics are aware of but don't manage directly.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 5/10 — Clinically sophisticated, moderately comfortable with technology used for patient care (monitoring, documentation systems). Not comfortable with evidence management administration.
+risk_tolerance: 2/10 — Extremely low for HIPAA exposure. A single HIPAA breach from improperly stored or shared footage carries significant organizational and personal liability.
+stress_level_during_use: 9/10 — Active patient care is the highest-stress use environment. Camera interaction must be zero-friction or it won't happen.
+decision_speed: Seconds — Camera activation decisions happen in the moment at scene. No deliberation is possible.
+adoption_attitude: Skeptical adopter — Will use cameras that are required by the agency. Concerned about patient privacy and additional administrative burden.
+primary_motivation: Patient care first — the camera is documentation, not the purpose.
+secondary_motivation: Clinical liability protection — footage that documents proper care procedures, patient consent, and scene conditions.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Stream Video (Visual Labs)"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Every day"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Watch the video feeds"
+    frequency: "Rarely"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Log incident"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "High ambient noise"
+    impact: "Active emergency scenes, sirens, patient distress. Voice activation commands must be robust against noise interference. Audio recording must capture clinical communication above ambient noise."
+  - factor: "Rain / moisture"
+    impact: "Outdoor scenes in all weather. Camera and docking station must be rated for moisture exposure."
+  - factor: "Moving vehicle / vibration"
+    impact: "Recording in the back of a moving ambulance is a primary use case. Camera must stabilize adequately for usable footage during transport."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Wearing gloves (tactical, medical, thermal)"
+    impact: "Medical gloves are always worn during patient care. Camera activation must be possible through nitrile gloves — hardware button strongly preferred over touchscreen."
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Both hands occupied with patient care equipment during critical interventions. Camera must operate passively or via voice once activated."
+  - factor: "Mask / face shield / SCBA"
+    impact: "Medical PPE restricts voice interaction and screen visibility. Camera must function without voice commands when full PPE is worn."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Cardiac arrest, trauma, pediatric emergency — maximum acute stress. Camera interaction must be zero steps under these conditions. Pre-activation or scene-triggered recording is required."
+  - factor: "Role-switching / multi-tasking between duties"
+    impact: "Paramedic is provider, documentarian, and communicator simultaneously. Camera must add zero cognitive load during active care."
+  - factor: "Vicarious trauma / disturbing content"
+    impact: "EMS personnel experience vicarious trauma from repeated exposure to critical patient events. Review of footage in QA context should be with clinical supervision and peer support awareness."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Difficult patient interaction — patient later alleges improper care and files a complaint
+    goal: Retrieve footage of the encounter to review what was documented and support the paramedic's account
+    current_pain: Footage is stored in a general evidence system not configured for HIPAA access controls; QA officer requests footage but the system doesn't restrict access to clinical-need-only roles; patient PHI is potentially visible to non-clinical staff
+    ideal_experience: QA officer access is HIPAA-role-scoped to clinical review only; footage is retrieved by unit number, date, and patient run number; paramedic and medical director review footage in a secure, documented clinical review session
+
+  - trigger: Agency wants to build clinical QA training module around airway management errors from real calls
+    goal: Compile de-identified footage from 10 recent calls showing airway management for training without exposing patient identity
+    current_pain: HIPAA requires patient authorization for any training use of identifiable footage; no automated redaction tool available; manual de-identification is prohibitively time-consuming; training module uses simulation instead of real footage
+    ideal_experience: HIPAA-compliant automated redaction removes identifiable patient information while preserving clinically relevant footage; de-identified clips are approved by medical director and published to the training module with full de-identification documentation
+```
+
+## Anti-Goals
+
+- Does NOT want to interrupt patient care to activate a camera
+- Does NOT want patient footage accessible to anyone without a documented clinical or legal need
+- Does NOT want a system that treats EMS footage like police footage without HIPAA controls
+- Does NOT want manual processes to satisfy HIPAA compliance — it must be built into the workflow
+
+## Domain Vocabulary
+
+`PHI, HIPAA, patient encounter, PCR, patient care report, clinical QA, medical director, de-identification, airway management, vitals, consent, EMS, BLS, ALS, paramedic, EMT, transport, cardiac arrest, trauma, incident report, run number`
+
+## Wish List
+
+HIPAA built in from the start — not bolted on. Footage access restricted to clinical staff with a documented need. Automatic scene-triggered recording when we get the call, so I'm not thinking about it when I'm thinking about the patient. De-identification that's fast enough that we can actually use real footage for training. And linking footage to the PCR so the QA team can watch what happened and read what was documented at the same time.
+</script>
+
+<script type="text/template" id="tpl-vl-corrections">
+# Persona: Corrections Officer
+
+```yaml
+persona_id: corrections_officer
+role: Detention facility staff documenting inmate interactions and facility incidents
+classification: TERTIARY USER
+platform: Visual Labs
+icon: 🔐
+```
+
+## Who is this user?
+
+A sworn or civilian corrections officer in a jail, prison, or detention facility using body cameras to document inmate interactions, use-of-force incidents, and facility events. The defining truth about this persona: they work in a contained environment where every interaction is potentially both volatile and observed. The camera is protection — from inmate allegations, from administrative second-guessing, and from liability. But continuous recording in a facility creates enormous data volumes, and footage that captures sensitive medical, legal, or personal interactions raises serious legal and ethical considerations.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Rugged, continuous recording capable of surviving a physical confrontation"
+    context: "Corrections environments involve direct physical contact during use-of-force incidents, restraint, and cell extractions. Cameras must survive impact, being grabbed, and intense physical activity. If the camera stops recording during a use-of-force event, the footage gap becomes the center of every complaint."
+  - weight: 5/5 (Critical)
+    need: "Long battery life supporting a full 12-hour shift with continuous recording"
+    context: "Corrections shifts are 12 hours. Officers cannot leave the secure facility to recharge or dock cameras mid-shift. Battery life must cover the full shift, with margin. Dead batteries at the critical moment are a liability catastrophe."
+  - weight: 4/5 (High)
+    need: "Automatic activation during use-of-force events — triggered by duress button or physical motion"
+    context: "Use-of-force events in corrections happen without warning. Officers are already engaged before they think about a camera. Duress-button-triggered recording or accelerometer-based activation ensures the camera captures the incident even if manual activation was missed."
+  - weight: 4/5 (High)
+    need: "Access control for sensitive footage — attorney-client visits, medical interactions, informant conversations"
+    context: "Corrections facilities capture legally privileged interactions that must be completely protected. Attorney-client communications have absolute privilege. Medical interactions raise HIPAA concerns. Footage captured in these contexts must be automatically flagged, access-restricted, and potentially auto-deleted according to policy."
+  - weight: 3/5 (Medium)
+    need: "Multi-camera incident reconstruction — correlate footage from multiple officers during a cell extraction"
+    context: "Cell extractions and facility riots involve multiple officers with cameras. Understanding what happened requires correlating those feeds chronologically, the same way law enforcement uses multi-camera timeline tools."
+  - weight: 2/5 (Low)
+    need: "Integration with facility incident reporting system"
+    context: "Incident reports in corrections are required for every use of force and significant event. Footage linked directly to the incident report at the time of filing reduces post-incident documentation burden."
+```
+
+## User Context
+
+Secure facility environment — no external connectivity in most of the building. Wireless upload may not be possible in all facility areas due to signal blocking. Physical docking at end of shift or during breaks is the primary upload mechanism. Access to footage review happens in a secure control room or administrative area. The environment is inherently isolated from standard IT infrastructure, and technology deployments must account for the physical security requirements of the facility.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 4/10 — Practical rather than technical. Comfortable with hardware that operates simply. Not familiar with evidence management systems or administrative software.
+risk_tolerance: 4/10 — Moderately risk-averse. Corrections officers are regularly accused of misconduct. Footage is the primary defense against false allegations.
+stress_level_during_use: 7/10 — Baseline elevated stress from the facility environment. Maximum acute stress during use-of-force events and facility disturbances.
+decision_speed: Seconds — Physical incident response and camera activation both happen in seconds.
+adoption_attitude: Pragmatic adopter — Will use cameras that clearly protect them from false allegations. Resistant to tools that add bureaucratic burden.
+primary_motivation: Personal protection from false allegations — footage is the reliable witness when the alternative is an inmate's word versus the officer's.
+secondary_motivation: Facility safety — documentation deters inmate misconduct and creates an accountability record for facility management.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Stream Video (Visual Labs)"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Every day"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Log incident"
+    frequency: "Frequently"
+    red_routes_baseline: "Used Rarely"
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Replay flight log"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "Low / intermittent connectivity"
+    impact: "Most secure facility areas have no WiFi or cellular connectivity. Cameras must buffer locally for the full shift and upload at docking. Any architecture requiring live connectivity for recording will fail inside the facility."
+  - factor: "Confined or cramped space"
+    impact: "Cell blocks, housing units, and sally ports are physically constrained environments. Camera mounting, interaction design, and recording angle must account for close-quarters physical confrontations."
+  - factor: "High ambient noise"
+    impact: "Facility noise — alarms, inmate activity, radio traffic — is constant. Audio activation cues are unreliable. Visual status indicators are essential."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Officers carry keys, radio, OC spray, and restraint equipment. Camera must mount securely and not be easily grabbed by an inmate during a confrontation."
+  - factor: "Physical fatigue / tremor"
+    impact: "12-hour shifts in physically demanding environments. End-of-shift camera docking and incident documentation must require minimal effort."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Cell extractions, inmate assaults, and facility disturbances create maximum acute stress. Camera must record without any interaction under these conditions."
+  - factor: "Vigilance fatigue / monitoring fatigue"
+    impact: "Extended routine monitoring between incidents creates attention fatigue. Incident detection and camera activation must not depend on officer vigilance alone."
+  - factor: "Vicarious trauma / disturbing content"
+    impact: "Corrections officers regularly document self-harm, assault, and death. Footage review in administrative contexts requires awareness of this psychological burden."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Cell extraction — inmate refuses to comply, physical force is required
+    goal: Full incident footage captured from all participating officers; footage available for administrative review and potential prosecution
+    current_pain: Activation depends on officers manually triggering cameras during a chaotic physical confrontation; some officers activate, others don't; reconstructing the incident from partial footage raises more questions than answers
+    ideal_experience: Duress button or motion-triggered activation fires recording automatically on all involved officers simultaneously; multi-camera timeline correlates the extraction chronologically; footage is held automatically for administrative review
+
+  - trigger: Inmate files excessive force complaint — facility investigation begins
+    goal: Retrieve complete footage from the incident and all officers present for administrative review
+    current_pain: Upload queue on a shared docking station creates gaps; footage from some officers uploaded successfully, others didn't; storage in the facility is limited and footage near purge threshold
+    ideal_experience: Incident-triggered legal hold preserves footage from all involved officers automatically; retrieval for administrative review requires one search by incident number; no footage purged while hold is active regardless of retention schedule
+```
+
+## Anti-Goals
+
+- Does NOT want cameras that fail during physical confrontations — the most critical recording moment
+- Does NOT want footage that requires external connectivity to capture or store during shift
+- Does NOT want sensitive legal or medical interactions captured and accessible without access controls
+- Does NOT want to manually track which incidents triggered recording and which didn't
+
+## Domain Vocabulary
+
+`cell extraction, use of force, inmate interaction, disciplinary report, facility incident, duress button, administrative review, restrictive housing, grievance, attorney-client privilege, PREA, classification, count, housing unit, tactical team, restraint`
+
+## Wish List
+
+Cameras that record without me touching them when something happens. Long enough battery for a full shift, no exceptions. When I dock at the end of shift, everything uploads and I'm done. If an inmate files a complaint, the footage is locked automatically and I can access it the next day. And if my camera captured an attorney visit or a medical appointment, that footage is restricted to the people with a legal right to see it — not everyone in the facility.
+</script>
+
+<script type="text/template" id="tpl-vl-transit-security">
+# Persona: Transit / Transportation Security
+
+```yaml
+persona_id: transit_security
+role: Transit authority or transportation security officer documenting passenger interactions
+classification: TERTIARY USER
+platform: Visual Labs
+icon: 🚇
+```
+
+## Who is this user?
+
+A security or safety officer deployed on public transit — buses, trains, stations, or airports — using body cameras to document passenger interactions, enforcement actions, and safety incidents. The defining truth about this persona: they work in an environment of constant movement, high passenger volume, and compressed interaction windows. The camera must capture fast-moving, often crowded scenes where the critical moment passes in seconds. Wide-angle capture and image stabilization are not features — they are the difference between footage that documents what happened and footage that shows nothing useful.
+
+## Needs & Challenges (Weighted)
+
+> **AI Decision-Making Directive:** When making design, feature, or implementation decisions that affect this persona, use the weight values below to prioritize. Weight 5 needs should never be compromised for lower-weight needs. Weight 1–2 needs are acceptable to deprioritize when they conflict with higher-weight needs. When two needs conflict, the higher weight wins.
+
+```yaml
+weighted_needs:
+  - weight: 5/5 (Critical)
+    need: "Wide-angle lens capable of capturing crowded, dynamic scenes"
+    context: "Transit incidents happen in packed train cars, station platforms, and bus aisles. Standard body camera FOV misses critical participants who are immediately to the side of the officer. A 130–160 degree field of view is the minimum for transit environments. Footage that shows only what's directly in front of the officer fails to document the full incident."
+  - weight: 5/5 (Critical)
+    need: "Electronic image stabilization for moving platform environments"
+    context: "Officers deployed on moving buses and trains generate footage that is unwatchable without stabilization. A bus over a pothole or a train braking makes shaky footage that is disorienting and reduces evidentiary value. Hardware or software stabilization is not a premium feature — it's baseline quality for transit deployment."
+  - weight: 4/5 (High)
+    need: "Audio capture quality adequate for crowded, noisy station and vehicle environments"
+    context: "Transit environments are among the noisiest public environments — PA announcements, engine noise, crowd noise, and alarms. Audio that captures interaction-level dialogue above this ambient noise requires directional microphones or noise cancellation. Inaudible audio on incident footage destroys its evidentiary value."
+  - weight: 4/5 (High)
+    need: "Fast evidence sharing with transit authority management, police, and partner agencies"
+    context: "Transit incidents frequently involve police response. Officers responding to an ongoing situation need footage from the transit security officer immediately — not hours later. Real-time or near-real-time sharing capability is operationally required for multiagency transit incidents."
+  - weight: 3/5 (Medium)
+    need: "Durability for a physically demanding, weather-exposed deployment environment"
+    context: "Transit officers work outdoor platforms in all weather, crowded vehicles, and stairwells. Cameras are bumped, rained on, and occasionally grabbed by agitated passengers. IP67 or better rating, reinforced mounting clips, and shock resistance are environmental requirements."
+  - weight: 2/5 (Low)
+    need: "Integration with fixed station/vehicle cameras to provide multi-angle incident reconstruction"
+    context: "Transit systems have extensive fixed camera infrastructure. Correlating a BWC officer feed with the fixed camera showing the same incident from a different angle provides a complete picture. Integration with existing transit surveillance systems dramatically increases the investigative value of BWC footage."
+```
+
+## User Context
+
+Mobile deployment across transit properties — stations, platforms, vehicles, and patrol routes. Highly variable environments from outdoor exposed platforms to underground tunnels with no connectivity. Interacts with large volumes of the public daily. Incident types range from fare evasion to serious assault and medical emergencies. Operates in multi-agency environments where police response is common. Technology access for footage review is primarily through a supervisor at a transit control center or security office.
+
+## Behavioral & Psychographic Profile
+
+```yaml
+tech_proficiency: 4/10 — Practical operator. Comfortable with transit radio systems and basic mobile devices. Not familiar with evidence management software. Expects hardware to work and software to stay out of the way.
+risk_tolerance: 5/10 — Moderate. Cameras protect against false passenger allegations. Conscious of transit authority's public accountability for officer conduct.
+stress_level_during_use: 6/10 — Elevated during passenger confrontations and incidents. High ambient noise and movement create constant sensory load even on routine deployments.
+decision_speed: Seconds — Incident response and camera activation both happen in seconds in transit environments.
+adoption_attitude: Practical adopter — Will use tools mandated by transit authority. Values hardware that works reliably in their specific environment.
+primary_motivation: Documenting passenger interactions for liability protection and incident resolution.
+secondary_motivation: Deterrence — visible cameras change passenger behavior and reduce incident frequency.
+```
+
+## Feature Usage
+
+> **AI Design Directive:** The features listed below are used by this persona. Frequency values reflect how often this persona specifically engages with each feature relative to the general user population. Optimize the highest-frequency features for this persona's workflow first — they are the critical path.
+
+```yaml
+feature_usage:
+  - feature: "Stream Video (Visual Labs)"
+    frequency: "Every day"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Save/Upload drone video/pics"
+    frequency: "Every day"
+    red_routes_baseline: "Used Occasionally"
+  - feature: "Notify/send video to people (MVL)"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Watch the video feeds"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Everyday"
+  - feature: "Log incident"
+    frequency: "Occasionally"
+    red_routes_baseline: "Used Rarely"
+```
+
+## Human Factors & Constraints
+
+> **AI Design Directive:** The following human factors are active constraints for this persona. Every UI element, interaction pattern, and information display must be evaluated against these factors. If a design decision would fail under any of these conditions, it must be flagged or redesigned. These are not edge cases — they are the expected operating conditions.
+
+### 🌦 Environmental Factors
+
+```yaml
+environmental_factors:
+  - factor: "High ambient noise"
+    impact: "PA announcements, engine noise, crowd noise, and alarms are constant. Audio activation commands are unreliable. Camera audio must discriminate between ambient noise and interaction-level dialogue."
+  - factor: "Moving vehicle / vibration"
+    impact: "Officers deployed on buses and trains experience constant vibration and movement. Image stabilization is required for usable footage. Physical camera mounts must withstand constant movement without dislodging."
+  - factor: "Rain / moisture"
+    impact: "Outdoor platform duty in all weather. Camera must be weather-rated for extended outdoor deployment."
+  - factor: "Extreme heat"
+    impact: "Outdoor summer platform duty creates device heat exposure. Camera must operate without throttling or shutdown in high ambient temperatures."
+  - factor: "Low / intermittent connectivity"
+    impact: "Underground transit environments have no cellular connectivity. Cameras must buffer locally and upload when connectivity is restored — at a station, at end of shift, or at a surface location."
+```
+
+### 🧤 Accessibility & Physical Factors
+
+```yaml
+accessibility_factors:
+  - factor: "One-handed operation"
+    impact: "Officers managing a confrontation or physical incident on a moving vehicle cannot use both hands for camera interaction. Single-button activation is the only reliable interface."
+  - factor: "Arms encumbered / carrying gear"
+    impact: "Transit security gear — radio, citation book, restraints — limits arm range of motion. Camera must be positioned and activated without requiring specific arm movements."
+```
+
+### 🧠 Psychological & Cognitive Factors
+
+```yaml
+psychological_factors:
+  - factor: "Acute stress / life-threatening situation"
+    impact: "Violent passenger confrontations, weapons incidents, and medical emergencies on transit vehicles create acute stress. Camera must record without deliberate activation under these conditions."
+  - factor: "Divided / split attention"
+    impact: "Officer is simultaneously managing the incident, maintaining radio contact with control, monitoring other passengers, and managing a moving vehicle environment. The camera is a peripheral function."
+  - factor: "Cognitive overload / information saturation"
+    impact: "High-volume public contact with constant environmental demands. Camera workflow must add zero cognitive load during active engagement."
+```
+
+
+## Key Scenarios
+
+```yaml
+scenarios:
+  - trigger: Passenger assault on a crowded bus — victim, suspect, and 20 witnesses present
+    goal: Capture usable footage of the assault, identify the suspect, and share footage with responding police before the bus clears at the next stop
+    current_pain: Standard FOV camera captures only what's directly in front of the officer, missing the assault that started 3 seats back; shaky footage from the moving bus is hard to review; sharing requires returning to the transit security office to upload
+    ideal_experience: Wide-angle camera captures the full bus interior at incident activation; image stabilization makes footage reviewable; near-real-time sharing sends a clip to responding police while they're still in transit to the scene
+
+  - trigger: Fare evasion enforcement escalates to use of force — passenger files complaint against officer
+    goal: Retrieve complete incident footage to support administrative review and potential civil litigation defense
+    current_pain: Officer was in an underground section with no connectivity during the incident; footage buffered locally but upload queue is behind; footage availability is uncertain when complaint arrives the next morning
+    ideal_experience: Local buffering guarantees footage capture regardless of connectivity; upload completes at first docking or connectivity opportunity; footage is searchable by officer, date, and station; incident-tagged recording is preserved under administrative hold automatically when complaint is filed
+```
+
+## Anti-Goals
+
+- Does NOT want cameras that produce shaky, unwatchable footage on moving vehicles
+- Does NOT want narrow field of view that misses incidents happening 3 feet to the side
+- Does NOT want footage unavailable because underground connectivity prevented upload
+- Does NOT want to return to a security office to share footage with police actively responding to an incident
+
+## Domain Vocabulary
+
+`transit security, fare evasion, passenger confrontation, station, platform, vehicle patrol, bus, rail, subway, fixed camera integration, incident report, multiagency response, transit authority, service disruption, field of view, FOV, image stabilization, EIS, OIS, noise cancellation`
+
+## Wish List
+
+A camera that sees the whole scene — not just straight ahead. Stable footage even when the bus hits a bump or the train brakes. Audio that captures what the passenger said, not the PA announcement. When something happens underground, it buffers and uploads the moment I surface. When police are responding to the same incident, I share the footage while they're still en route. The camera should be working for me while I'm working — not the other way around.
 </script>
 
 </body>
