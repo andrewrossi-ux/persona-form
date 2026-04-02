@@ -429,6 +429,8 @@ let showPreview = false;
 let previewMode = "raw";
 let expandedFactors = {};
 let activeTemplate = null;
+let fileTemplates = [];
+let dirHandle = null;
 
 const TEMPLATES=[
   {id:"tpl-admin",name:"Manager / Admin",icon:"⚡",desc:"Always justifying the program. Turns flight data into political ammunition."},
@@ -898,9 +900,15 @@ function hasActiveWork(){
 }
 function loadTemplate(tpl){
   if(hasActiveWork()&&!confirm('Load "'+tpl.name+'"?\n\nThis will replace your current work.')){return;}
-  const el=document.getElementById(tpl.id);
-  if(!el) return;
-  const parsed=parsePersonaMarkdown(el.textContent.trim());
+  let md;
+  if(tpl.content){
+    md=tpl.content.trim();
+  }else{
+    const el=document.getElementById(tpl.id);
+    if(!el) return;
+    md=el.textContent.trim();
+  }
+  const parsed=parsePersonaMarkdown(md);
   Object.assign(state,parsed);
   activeTemplate=tpl.id;
   currentTab="basics";
@@ -909,18 +917,91 @@ function loadTemplate(tpl){
 function renderSidebar(){
   const sb=document.getElementById("templateSidebar");
   if(!sb) return;
-  sb.innerHTML=`<div class="template-sidebar-head">Templates</div>`+
+  let html=`<div class="template-sidebar-head">DroneSense</div>`+
     TEMPLATES.map(t=>`<div class="template-card${activeTemplate===t.id?" active":""}" data-tpl="${t.id}">
       <div class="template-card-icon">${t.icon}</div>
       <div class="template-card-name">${t.name}</div>
       <div class="template-card-desc">${t.desc}</div>
     </div>`).join("");
+  if(fileTemplates.length){
+    const byPlatform={};
+    fileTemplates.forEach(t=>{const p=t.platform||'Other';(byPlatform[p]=byPlatform[p]||[]).push(t);});
+    Object.entries(byPlatform).forEach(([platform,tpls])=>{
+      html+=`<div class="template-sidebar-head" style="margin-top:8px">${platform}</div>`;
+      html+=tpls.map(t=>`<div class="template-card${activeTemplate===t.id?" active":""}" data-tpl-file="${t.id}">
+        <div class="template-card-icon">${t.icon}</div>
+        <div class="template-card-name">${t.name}</div>
+        <div class="template-card-desc">${t.desc}</div>
+      </div>`).join("");
+    });
+  }
+  html+=`<div style="padding:8px 4px 4px">
+    <button class="btn btn-ghost sm" id="btnLoadFolder" style="width:100%;justify-content:center;font-size:11px">
+      ${fileTemplates.length?'↺ Reload folder':'📁 Load from folder'}
+    </button>
+  </div>`;
+  sb.innerHTML=html;
   sb.querySelectorAll("[data-tpl]").forEach(el=>{
     el.addEventListener("click",()=>{
       const tpl=TEMPLATES.find(t=>t.id===el.dataset.tpl);
       if(tpl) loadTemplate(tpl);
     });
   });
+  sb.querySelectorAll("[data-tpl-file]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const tpl=fileTemplates.find(t=>t.id===el.dataset.tplFile);
+      if(tpl) loadTemplate(tpl);
+    });
+  });
+  const btnLF=document.getElementById("btnLoadFolder");
+  if(btnLF) btnLF.addEventListener("click",loadTemplatesFolder);
+}
+
+async function loadTemplatesFolder(){
+  if(!window.showDirectoryPicker){
+    alert('File System Access API not supported. Please use Chrome or Edge.');
+    return;
+  }
+  try{
+    if(!dirHandle||fileTemplates.length===0){
+      dirHandle=await window.showDirectoryPicker({mode:'read'});
+    }
+    await scanTemplateFolder();
+  }catch(e){
+    if(e.name!=='AbortError') console.error('Folder load error:',e);
+  }
+}
+
+async function scanTemplateFolder(){
+  if(!dirHandle) return;
+  const templates=[];
+  for await(const[name,handle] of dirHandle.entries()){
+    if(handle.kind==='file'&&name.endsWith('.md')){
+      try{
+        const file=await handle.getFile();
+        const text=await file.text();
+        const nameM=text.match(/^#\s+Persona:\s*(.+)/m);
+        const iconM=text.match(/^icon:\s*([^\n\r#]+)/m);
+        const platformM=text.match(/^platform:\s*([^\n\r#]+)/m);
+        const roleM=text.match(/^role:\s*([^\n\r#]+)/m);
+        templates.push({
+          id:'file::'+name,
+          name:nameM?nameM[1].trim():name.replace(/\.md$/,''),
+          icon:iconM?iconM[1].trim():'👤',
+          platform:platformM?platformM[1].trim():'',
+          desc:roleM?roleM[1].trim():'',
+          content:text
+        });
+      }catch(err){console.warn('Could not read',name,err);}
+    }
+  }
+  templates.sort((a,b)=>{
+    if(a.platform<b.platform) return -1;
+    if(a.platform>b.platform) return 1;
+    return a.name.localeCompare(b.name);
+  });
+  fileTemplates=templates;
+  renderSidebar();
 }
 
 // ============================================================
