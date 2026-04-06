@@ -10,7 +10,7 @@ icon: 🚔
 
 ## Who is this user?
 
-Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, stop recording, and trust the upload to happen automatically. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
+Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, ensure footage is uploaded. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
 
 ## Needs & Challenges (Weighted)
 
