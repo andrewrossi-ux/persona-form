@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Active emergency scene — ambulance, patient residence, or emergency department. Physical demands of patient care are the primary focus; camera interaction is a fraction of cognitive load. Access to footage happens primarily in QA review at the EMS agency office or hospital, not in the field. HIPAA compliance is an organizational obligation that individual paramedics are aware of but don't manage directly.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -85,7 +86,7 @@ environmental_factors:
   - factor: "High ambient noise"
     impact: "Active emergency scenes, sirens, patient distress. Voice activation commands must be robust against noise interference. Audio recording must capture clinical communication above ambient noise."
   - factor: "Rain / moisture"
-    impact: "Outdoor scenes in all weather. Camera and docking station must be rated for moisture exposure."
+    impact: "Outdoor scenes in all weather. Camera hardware and its upload/connectivity workflow must remain reliable after moisture exposure."
   - factor: "Moving vehicle / vibration"
     impact: "Recording in the back of a moving ambulance is a primary use case. Camera must stabilize adequately for usable footage during transport."
 ```

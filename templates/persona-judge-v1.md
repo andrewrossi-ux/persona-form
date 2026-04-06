@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Courtroom environment — bench, clerk's station, and counsel tables. Standard court AV systems that vary significantly by jurisdiction and building age. Court personnel interact with evidence only in the controlled context of a proceeding. Not a technology user; expects submitted evidence to conform to court requirements, not the reverse. Technical issues during trial are highly disruptive to proceedings.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Works in a separate unit from patrol, often physically isolated to preserve investigative independence. Uses a dedicated workstation with restricted system access. Investigations may span weeks or months. Interacts with officers, supervisors, complainants, oversight boards, and legal counsel. Every action taken during an investigation must be documentable and defensible. Operates under strict confidentiality requirements that may conflict with public records requests.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

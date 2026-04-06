@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Executive office environment — primarily using a laptop or large display for briefings. Interfaces with the BWC system primarily through dashboards and summary reports, not direct footage review. Meets with city officials, oversight boards, and media. Their primary anxiety is about surprises — critical incidents that the department didn't know about, policy failures that become headlines, or community trust events they weren't prepared for. Decision horizons are months to years.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

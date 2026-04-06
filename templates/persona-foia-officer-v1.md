@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Administrative office environment — desk-based with standard workstation. Manages a queue of public records requests from journalists, attorneys, community members, and oversight organizations. Often the only person in the department responsible for this function. Operates under statutory deadline pressure and potential litigation exposure. Has little direct involvement with the operational side of the BWC program — receives finished footage and processes release requests against legal requirements.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

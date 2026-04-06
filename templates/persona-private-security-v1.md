@@ -23,7 +23,7 @@ weighted_needs:
     context: "Private security operates on thin budgets — often $20–30/hour labor with no dedicated technology budget. Camera cost, subscription cost, and storage cost determine whether the program exists at all. Enterprise-priced solutions are simply not viable. Hardware must be affordable without sacrificing basic reliability and video quality."
   - weight: 5/5 (Critical)
     need: "Simple, one-touch activation and automatic upload"
-    context: "Private security officers typically have minimal technical training. Camera operation must be as simple as pressing one button to record. End-of-shift docking that auto-uploads removes any post-shift technical burden from non-technical staff."
+    context: "Private security officers typically have minimal technical training. Camera operation must be as simple as pressing one button to record. Once recording stops, upload should happen automatically whenever WiFi or internet connectivity is available, with no post-shift technical burden on non-technical staff."
   - weight: 4/5 (High)
     need: "Fast retrieval of footage when an incident requires documentation for a client, police, or insurance"
     context: "The primary value of body cameras in private security is documentation: insurance claims, client incident reports, police cooperation, and internal reviews. Footage must be retrievable by date and officer within minutes — not hours."
@@ -40,7 +40,7 @@ weighted_needs:
 
 ## User Context
 
-Deployed at a fixed post or mobile patrol — typically operating alone or in pairs. Access to technology is limited; most interaction with the camera is hardware-only (press record, dock to upload). Supervisors review footage on a smartphone or tablet, not a workstation. Budget constraints dominate every technology decision. The organization may have 5 officers or 500 — most are small businesses without dedicated IT staff.
+Deployed at a fixed post or mobile patrol — typically operating alone or in pairs. Access to technology is limited; most interaction with the camera is hardware-only. Visual Labs does not use docks to upload footage; once recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. Supervisors review footage on a smartphone or tablet, not a workstation. Budget constraints dominate every technology decision. The organization may have 5 officers or 500 — most are small businesses without dedicated IT staff.
 
 ## Behavioral & Psychographic Profile
 
@@ -138,8 +138,8 @@ scenarios:
 
 ## Domain Vocabulary
 
-`incident documentation, trespassing, use of force, detainment, liability, insurance claim, client report, post orders, shift report, activation, dock, upload, sharing link, footage request, confrontation, deterrence`
+`incident documentation, trespassing, use of force, detainment, liability, insurance claim, client report, post orders, shift report, activation, upload, sharing link, footage request, confrontation, deterrence`
 
 ## Wish List
 
-Hardware that costs less than a radio and software that doesn't require an IT department. One button to record, dock to upload. When an incident happens, my supervisor pulls the footage in 2 minutes and sends a link to whoever needs it. Police, clients, insurance adjusters — they all click the link and watch it without downloading anything or creating an account. Simple enough that any officer can use it on day one with five minutes of training.
+Hardware that costs less than a radio and software that doesn't require an IT department. One button to record, then let it upload automatically whenever WiFi or internet is available. When an incident happens, my supervisor pulls the footage in 2 minutes and sends a link to whoever needs it. Police, clients, insurance adjusters — they all click the link and watch it without downloading anything or creating an account. Simple enough that any officer can use it on day one with five minutes of training.

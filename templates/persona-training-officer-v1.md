@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Works in a training unit or academy — may be physically separate from the operational precinct. Uses a workstation with good display quality for footage review. Building training modules requires extended time with footage: reviewing, selecting, clipping, and annotating. Access to operational footage must be read-only and de-identification capabilities must be available without going through IA or evidence tech. Interaction with the BWC system is periodic but intensive when building curriculum.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

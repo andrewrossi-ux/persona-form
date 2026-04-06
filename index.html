@@ -2576,7 +2576,7 @@ icon: 🚔
 
 ## Who is this user?
 
-Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, dock. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
+Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, stop recording, and trust the upload to happen automatically. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
 
 ## Needs & Challenges (Weighted)
 
@@ -2588,8 +2588,8 @@ weighted_needs:
     need: "Zero friction activation — camera must be recording before the situation escalates"
     context: "Officers draw their camera like they draw their weapon — in seconds, under stress, without looking. A camera that requires multiple steps, confirmation screens, or PIN entry before recording is a camera that won't be running when it matters most."
   - weight: 5/5 (Critical)
-    need: "Reliable automatic upload and docking without manual intervention"
-    context: "End of shift means getting home. Officers will not troubleshoot sync failures, re-dock cameras, or manually transfer footage. Docking must complete upload silently and automatically. Failures that require officer attention are failures that lose evidence."
+    need: "Reliable automatic cloud upload without manual intervention"
+    context: "End of shift means getting home. Officers will not troubleshoot sync failures or manually transfer footage. Once recording stops, upload should complete silently and automatically whenever WiFi or internet connectivity is available. Failures that require officer attention are failures that lose evidence."
   - weight: 4/5 (High)
     need: "Simple, fast incident tagging without disrupting the call workflow"
     context: "Policies require tagging footage by incident type, case number, or call type. This must happen in seconds with minimal input — ideally one tap or auto-populated from CAD data. Any tagging workflow that takes more than 10 seconds at scene will be skipped."
@@ -2606,14 +2606,14 @@ weighted_needs:
 
 ## User Context
 
-In the field — on foot, in a vehicle, or at a scene. The body camera is attached to uniform and activates in response to policy triggers (traffic stops, use of force, arrests) or manual activation. Officers are managing radio traffic, safety considerations, and tactical awareness simultaneously. End-of-shift docking happens at the station, often when tired. They interact with the desktop/web software rarely — primarily to review a specific piece of footage they need for a report. Tech access is through department-issued devices with restricted permissions.
+In the field — on foot, in a vehicle, or at a scene. The body camera is attached to uniform and activates in response to policy triggers (traffic stops, use of force, arrests) or manual activation. Officers are managing radio traffic, safety considerations, and tactical awareness simultaneously. Visual Labs does not use docks to upload footage; once recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. They interact with the desktop/web software rarely — primarily to review a specific piece of footage they need for a report. Tech access is through department-issued devices with restricted permissions.
 
 ## Behavioral & Psychographic Profile
 
 ```yaml
 tech_proficiency: 4/10 — Comfortable with the hardware camera unit but not the backend software. Uses the system as it was trained, not exploratorily. Expects things to work without configuration.
 risk_tolerance: 5/10 — Personally risk-averse about footage — missing or lost footage is a career and legal risk. Risk tolerant operationally.
-stress_level_during_use: 8/10 — Camera activation occurs in high-stress moments (traffic stops, confrontations, use of force). Post-shift docking is low-stress but fatigue is high.
+stress_level_during_use: 8/10 — Camera activation occurs in high-stress moments (traffic stops, confrontations, use of force). Post-shift upload awareness is low-stress but fatigue is high.
 decision_speed: Seconds — Activation decisions happen in seconds. In-field tagging in seconds. No deliberation.
 adoption_attitude: Pragmatic skeptic — Will adopt tools that make the job easier or reduce liability. Resents tools that add administrative burden.
 primary_motivation: Doing the job safely and going home — the camera is protection, evidence, and policy compliance.
@@ -2684,7 +2684,7 @@ psychological_factors:
   - factor: "Acute stress / life-threatening situation"
     impact: "Use-of-force situations trigger fight-or-flight. Camera activation must be habituated — a single, unmistakable motion. Multi-step activation will not happen under acute stress."
   - factor: "Decision fatigue"
-    impact: "End of a 12-hour shift, especially on busy nights. Docking, tagging, and any post-shift software interaction suffers from depleted attention. Must be automatic or near-zero effort."
+    impact: "End of a 12-hour shift, especially on busy nights. Upload completion, tagging, and any post-shift software interaction suffers from depleted attention. Must be automatic or near-zero effort."
   - factor: "External organizational / political pressure"
     impact: "Officers know footage may be reviewed by supervisors, IA, and the public. This creates both protective motivation (wanting it to record) and anxiety about review context."
 ```
@@ -2697,7 +2697,7 @@ scenarios:
   - trigger: Traffic stop escalates to use of force
     goal: Camera is recording from the moment of escalation, footage is automatically saved and tagged
     current_pain: Manual activation required, officer under stress may forget or activate too late; post-incident tagging requires going back into a portal and filling out fields while still at scene
-    ideal_experience: Pre-event buffer captures escalation; single button activation with unmistakable visual/haptic confirmation; CAD call number auto-populates the tag; docking at end of shift uploads silently
+    ideal_experience: Pre-event buffer captures escalation; single button activation with unmistakable visual/haptic confirmation; CAD call number auto-populates the tag; once recording stops, upload happens silently as soon as WiFi or internet connectivity is available
 
   - trigger: Officer receives complaint two weeks after an incident
     goal: Pull up the BWC footage from that specific call quickly to prepare for internal interview
@@ -2714,11 +2714,11 @@ scenarios:
 
 ## Domain Vocabulary
 
-`BWC, body cam, activation, pre-event buffer, dock, upload, sync, incident tag, use of force, UOF, traffic stop, arrest, CAD, dispatch, call number, report writing, chain of custody, IA, complaint, protective recording, shift, end of shift, rollcall`
+`BWC, body cam, activation, pre-event buffer, upload, sync, incident tag, use of force, UOF, traffic stop, arrest, CAD, dispatch, call number, report writing, chain of custody, IA, complaint, protective recording, shift, end of shift, rollcall`
 
 ## Wish List
 
-Hit one button and know it's recording. That's it. At the end of shift I dock it and forget about it — everything uploads automatically. When I need footage for a report, I find it in seconds by date and call number. No portals, no passwords, no waiting. If there's a complaint, I can pull up exactly what happened without needing to ask IT or a supervisor. The system protects me the same way it protects the public.
+Hit one button and know it's recording. That's it. When the recording ends, everything uploads automatically as soon as WiFi or internet is available. When I need footage for a report, I find it in seconds by date and call number. No portals, no passwords, no waiting. If there's a complaint, I can pull up exactly what happened without needing to ask IT or a supervisor. The system protects me the same way it protects the public.
 </script>
 
 <script type="text/template" id="tpl-vl-supervisor">
@@ -2765,6 +2765,7 @@ weighted_needs:
 ## User Context
 
 Split between field supervision and desk work. Reviews footage on a workstation at the precinct, often under time pressure from internal affairs, command, or public complaints. Manages squad cameras in the evidence system and runs shift briefings using footage for training moments. Chronic moderate stress that spikes when complaints arrive or incidents go public. Relies heavily on search and filter tools — any friction in finding specific footage is a direct operational cost.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -2909,6 +2910,7 @@ weighted_needs:
 ## User Context
 
 Working at a desk in an investigations unit — typically a standard workstation with one or two monitors. Case loads are heavy and time is scarce. BWC review is one of many evidence types being managed simultaneously (witness interviews, surveillance video, forensics). Access to footage must be possible without involving evidence technicians for routine case work. Chain-of-custody consciousness is constant — every action has potential courtroom implications.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3045,6 +3047,7 @@ weighted_needs:
 ## User Context
 
 Primarily desk-based in an evidence management room or administrative unit. Works with web-based evidence management software across multiple monitors. Manages both physical evidence (hardware, drives) and digital evidence (video, metadata). Receives requests from detectives, IA, prosecutors, and supervisors. Always under deadline pressure from legal holds and discovery requests. Often a one or two-person team for an entire department.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3184,6 +3187,7 @@ weighted_needs:
 ## User Context
 
 Executive office environment — primarily using a laptop or large display for briefings. Interfaces with the BWC system primarily through dashboards and summary reports, not direct footage review. Meets with city officials, oversight boards, and media. Their primary anxiety is about surprises — critical incidents that the department didn't know about, policy failures that become headlines, or community trust events they weren't prepared for. Decision horizons are months to years.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3309,6 +3313,7 @@ weighted_needs:
 ## User Context
 
 Office-based at the DA's office — separate from the police department's systems. Standard desktop workstation. Works under case deadline pressure with heavy caseloads. Receives footage from multiple agencies using different BWC platforms. Has no direct access to the evidence management system and depends entirely on what detectives or evidence technicians provide. Time to trial preparation is compressed. Not a technology specialist — expects evidence to arrive ready to use.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3434,6 +3439,7 @@ weighted_needs:
 ## User Context
 
 Works in a separate unit from patrol, often physically isolated to preserve investigative independence. Uses a dedicated workstation with restricted system access. Investigations may span weeks or months. Interacts with officers, supervisors, complainants, oversight boards, and legal counsel. Every action taken during an investigation must be documentable and defensible. Operates under strict confidentiality requirements that may conflict with public records requests.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3565,6 +3571,7 @@ weighted_needs:
 ## User Context
 
 Administrative office environment — desk-based with standard workstation. Manages a queue of public records requests from journalists, attorneys, community members, and oversight organizations. Often the only person in the department responsible for this function. Operates under statutory deadline pressure and potential litigation exposure. Has little direct involvement with the operational side of the BWC program — receives finished footage and processes release requests against legal requirements.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3698,6 +3705,7 @@ weighted_needs:
 ## User Context
 
 Works in a training unit or academy — may be physically separate from the operational precinct. Uses a workstation with good display quality for footage review. Building training modules requires extended time with footage: reviewing, selecting, clipping, and annotating. Access to operational footage must be read-only and de-identification capabilities must be available without going through IA or evidence tech. Interaction with the BWC system is periodic but intensive when building curriculum.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -3829,12 +3837,12 @@ weighted_needs:
     context: "Evidence storage is expensive and grows continuously. IT needs forecasting tools, automated tiering to cold storage for aged footage, and retention policy integration that purges eligible footage without manual intervention."
   - weight: 2/5 (Low)
     need: "Diagnostic tools for connectivity and sync failure investigation"
-    context: "When a camera fails to upload, IT needs to understand why: network issue, hardware failure, docking station malfunction, or software bug. Without diagnostic tooling, every failure investigation requires on-site physical inspection."
+    context: "When a camera fails to upload, IT needs to understand why: network issue, hardware failure, lost WiFi/internet connectivity, or software bug. Without diagnostic tooling, every failure investigation requires on-site physical inspection."
 ```
 
 ## User Context
 
-Works in an IT office or data center environment. Manages the BWC system as one of many department technology systems alongside CAD, RMS, network infrastructure, and mobile devices. Has direct access to backend systems that other personas cannot reach. Interacts with the BWC vendor's technical support for escalated issues. May also be responsible for physical docking station installation, network configuration, and CJIS compliance for the system.
+Works in an IT office or data center environment. Manages the BWC system as one of many department technology systems alongside CAD, RMS, network infrastructure, and mobile devices. Has direct access to backend systems that other personas cannot reach. Interacts with the BWC vendor's technical support for escalated issues. Visual Labs does not use docks to upload footage; once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. This persona is therefore responsible for network configuration, connectivity reliability, and CJIS compliance for the system.
 
 ## Behavioral & Psychographic Profile
 
@@ -3895,11 +3903,11 @@ scenarios:
   - trigger: Pre-shift rollcall — supervisor reports 3 cameras didn't upload last night
     goal: Diagnose the upload failures, restore connectivity, and confirm footage is captured before officers go on shift
     current_pain: No centralized visibility into upload status by camera serial number; must log into the backend console and filter through sync logs; three different cameras could have three different failure causes with no way to triage remotely
-    ideal_experience: Fleet dashboard shows exactly which 3 cameras failed with failure code (network, hardware, docking station); one-click diagnostic shows last sync attempt and error; remote reset and re-sync initiated from dashboard without touching the physical device
+    ideal_experience: Fleet dashboard shows exactly which 3 cameras failed with failure code (network, hardware, connectivity, software); one-click diagnostic shows last sync attempt and error; remote reset and re-sync initiated from dashboard without touching the physical device
 
   - trigger: New firmware version released — need to deploy to all 200 cameras without interrupting active shift recording
     goal: Stage and deploy firmware update during off-peak hours with automatic rollback if failure rate exceeds threshold
-    current_pain: Update must be initiated camera by camera or in small batches; no rollback mechanism if new firmware causes issues; no deployment status dashboard showing which cameras have updated; rogue officers who never dock delay deployment for months
+    current_pain: Update must be initiated camera by camera or in small batches; no rollback mechanism if new firmware causes issues; no deployment status dashboard showing which cameras have updated; devices that fail to reconnect to WiFi or internet delay deployment for months
     ideal_experience: Scheduled deployment window targets all cameras not currently recording; deployment dashboard shows real-time adoption rate; automatic rollback triggers if error rate exceeds 5%; post-deployment report shows coverage percentage with list of remaining non-compliant cameras
 ```
 
@@ -3912,7 +3920,7 @@ scenarios:
 
 ## Domain Vocabulary
 
-`fleet management, firmware, OTA update, docking station, CJIS, SSAE, Active Directory, SSO, SAML, role-based access control, RBAC, storage tiering, cold storage, sync failure, upload queue, device health, battery lifecycle, audit log, compliance report, staging environment`
+`fleet management, firmware, OTA update, cloud upload, CJIS, SSAE, Active Directory, SSO, SAML, role-based access control, RBAC, storage tiering, cold storage, sync failure, upload queue, device health, battery lifecycle, audit log, compliance report, staging environment`
 
 ## Wish List
 
@@ -3963,6 +3971,7 @@ weighted_needs:
 ## User Context
 
 Courtroom environment — bench, clerk's station, and counsel tables. Standard court AV systems that vary significantly by jurisdiction and building age. Court personnel interact with evidence only in the controlled context of a proceeding. Not a technology user; expects submitted evidence to conform to court requirements, not the reverse. Technical issues during trial are highly disruptive to proceedings.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -4090,6 +4099,7 @@ weighted_needs:
 ## User Context
 
 Meeting environment and home/office use — not a law enforcement facility. Board members are community volunteers, attorneys, academics, or advocates with varied technical backgrounds. Access must be browser-based, secure, and require no specialized software or configuration. Reviews are episodic — triggered by complaints or scheduled review cycles, not daily use. Technical support is limited; the interface must be self-explanatory.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -4196,7 +4206,7 @@ weighted_needs:
     context: "Private security operates on thin budgets — often $20–30/hour labor with no dedicated technology budget. Camera cost, subscription cost, and storage cost determine whether the program exists at all. Enterprise-priced solutions are simply not viable. Hardware must be affordable without sacrificing basic reliability and video quality."
   - weight: 5/5 (Critical)
     need: "Simple, one-touch activation and automatic upload"
-    context: "Private security officers typically have minimal technical training. Camera operation must be as simple as pressing one button to record. End-of-shift docking that auto-uploads removes any post-shift technical burden from non-technical staff."
+    context: "Private security officers typically have minimal technical training. Camera operation must be as simple as pressing one button to record. Once recording stops, upload should happen automatically whenever WiFi or internet connectivity is available, with no post-shift technical burden on non-technical staff."
   - weight: 4/5 (High)
     need: "Fast retrieval of footage when an incident requires documentation for a client, police, or insurance"
     context: "The primary value of body cameras in private security is documentation: insurance claims, client incident reports, police cooperation, and internal reviews. Footage must be retrievable by date and officer within minutes — not hours."
@@ -4213,7 +4223,7 @@ weighted_needs:
 
 ## User Context
 
-Deployed at a fixed post or mobile patrol — typically operating alone or in pairs. Access to technology is limited; most interaction with the camera is hardware-only (press record, dock to upload). Supervisors review footage on a smartphone or tablet, not a workstation. Budget constraints dominate every technology decision. The organization may have 5 officers or 500 — most are small businesses without dedicated IT staff.
+Deployed at a fixed post or mobile patrol — typically operating alone or in pairs. Access to technology is limited; most interaction with the camera is hardware-only. Visual Labs does not use docks to upload footage; once recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. Supervisors review footage on a smartphone or tablet, not a workstation. Budget constraints dominate every technology decision. The organization may have 5 officers or 500 — most are small businesses without dedicated IT staff.
 
 ## Behavioral & Psychographic Profile
 
@@ -4311,11 +4321,11 @@ scenarios:
 
 ## Domain Vocabulary
 
-`incident documentation, trespassing, use of force, detainment, liability, insurance claim, client report, post orders, shift report, activation, dock, upload, sharing link, footage request, confrontation, deterrence`
+`incident documentation, trespassing, use of force, detainment, liability, insurance claim, client report, post orders, shift report, activation, upload, sharing link, footage request, confrontation, deterrence`
 
 ## Wish List
 
-Hardware that costs less than a radio and software that doesn't require an IT department. One button to record, dock to upload. When an incident happens, my supervisor pulls the footage in 2 minutes and sends a link to whoever needs it. Police, clients, insurance adjusters — they all click the link and watch it without downloading anything or creating an account. Simple enough that any officer can use it on day one with five minutes of training.
+Hardware that costs less than a radio and software that doesn't require an IT department. One button to record, then let it upload automatically whenever WiFi or internet is available. When an incident happens, my supervisor pulls the footage in 2 minutes and sends a link to whoever needs it. Police, clients, insurance adjusters — they all click the link and watch it without downloading anything or creating an account. Simple enough that any officer can use it on day one with five minutes of training.
 </script>
 
 <script type="text/template" id="tpl-vl-ems">
@@ -4362,6 +4372,7 @@ weighted_needs:
 ## User Context
 
 Active emergency scene — ambulance, patient residence, or emergency department. Physical demands of patient care are the primary focus; camera interaction is a fraction of cognitive load. Access to footage happens primarily in QA review at the EMS agency office or hospital, not in the field. HIPAA compliance is an organizational obligation that individual paramedics are aware of but don't manage directly.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -4406,7 +4417,7 @@ environmental_factors:
   - factor: "High ambient noise"
     impact: "Active emergency scenes, sirens, patient distress. Voice activation commands must be robust against noise interference. Audio recording must capture clinical communication above ambient noise."
   - factor: "Rain / moisture"
-    impact: "Outdoor scenes in all weather. Camera and docking station must be rated for moisture exposure."
+    impact: "Outdoor scenes in all weather. Camera hardware and its upload/connectivity workflow must remain reliable after moisture exposure."
   - factor: "Moving vehicle / vibration"
     impact: "Recording in the back of a moving ambulance is a primary use case. Camera must stabilize adequately for usable footage during transport."
 ```
@@ -4493,7 +4504,7 @@ weighted_needs:
     context: "Corrections environments involve direct physical contact during use-of-force incidents, restraint, and cell extractions. Cameras must survive impact, being grabbed, and intense physical activity. If the camera stops recording during a use-of-force event, the footage gap becomes the center of every complaint."
   - weight: 5/5 (Critical)
     need: "Long battery life supporting a full 12-hour shift with continuous recording"
-    context: "Corrections shifts are 12 hours. Officers cannot leave the secure facility to recharge or dock cameras mid-shift. Battery life must cover the full shift, with margin. Dead batteries at the critical moment are a liability catastrophe."
+    context: "Corrections shifts are 12 hours. Officers cannot leave the secure facility to recharge devices or depend on mid-shift connectivity. Battery life must cover the full shift, with margin. Dead batteries at the critical moment are a liability catastrophe."
   - weight: 4/5 (High)
     need: "Automatic activation during use-of-force events — triggered by duress button or physical motion"
     context: "Use-of-force events in corrections happen without warning. Officers are already engaged before they think about a camera. Duress-button-triggered recording or accelerometer-based activation ensures the camera captures the incident even if manual activation was missed."
@@ -4510,7 +4521,7 @@ weighted_needs:
 
 ## User Context
 
-Secure facility environment — no external connectivity in most of the building. Wireless upload may not be possible in all facility areas due to signal blocking. Physical docking at end of shift or during breaks is the primary upload mechanism. Access to footage review happens in a secure control room or administrative area. The environment is inherently isolated from standard IT infrastructure, and technology deployments must account for the physical security requirements of the facility.
+Secure facility environment — no external connectivity in most of the building. Wireless upload may not be possible in all facility areas due to signal blocking. Visual Labs does not use docks to upload footage; once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. Access to footage review happens in a secure control room or administrative area. The environment is inherently isolated from standard IT infrastructure, and technology deployments must account for the physical security requirements of the facility.
 
 ## Behavioral & Psychographic Profile
 
@@ -4556,7 +4567,7 @@ feature_usage:
 ```yaml
 environmental_factors:
   - factor: "Low / intermittent connectivity"
-    impact: "Most secure facility areas have no WiFi or cellular connectivity. Cameras must buffer locally for the full shift and upload at docking. Any architecture requiring live connectivity for recording will fail inside the facility."
+    impact: "Most secure facility areas have no WiFi or cellular connectivity. Cameras must buffer locally for the full shift and upload automatically once WiFi or internet connectivity is available. Any architecture requiring live connectivity for recording will fail inside the facility."
   - factor: "Confined or cramped space"
     impact: "Cell blocks, housing units, and sally ports are physically constrained environments. Camera mounting, interaction design, and recording angle must account for close-quarters physical confrontations."
   - factor: "High ambient noise"
@@ -4570,7 +4581,7 @@ accessibility_factors:
   - factor: "Arms encumbered / carrying gear"
     impact: "Officers carry keys, radio, OC spray, and restraint equipment. Camera must mount securely and not be easily grabbed by an inmate during a confrontation."
   - factor: "Physical fatigue / tremor"
-    impact: "12-hour shifts in physically demanding environments. End-of-shift camera docking and incident documentation must require minimal effort."
+    impact: "12-hour shifts in physically demanding environments. End-of-shift upload completion and incident documentation must require minimal effort."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
@@ -4597,7 +4608,7 @@ scenarios:
 
   - trigger: Inmate files excessive force complaint — facility investigation begins
     goal: Retrieve complete footage from the incident and all officers present for administrative review
-    current_pain: Upload queue on a shared docking station creates gaps; footage from some officers uploaded successfully, others didn't; storage in the facility is limited and footage near purge threshold
+    current_pain: Some footage is still waiting for WiFi or internet connectivity before cloud upload completes; footage from some officers is already available while others remain pending; storage in the facility is limited and footage near purge threshold
     ideal_experience: Incident-triggered legal hold preserves footage from all involved officers automatically; retrieval for administrative review requires one search by incident number; no footage purged while hold is active regardless of retention schedule
 ```
 
@@ -4614,7 +4625,7 @@ scenarios:
 
 ## Wish List
 
-Cameras that record without me touching them when something happens. Long enough battery for a full shift, no exceptions. When I dock at the end of shift, everything uploads and I'm done. If an inmate files a complaint, the footage is locked automatically and I can access it the next day. And if my camera captured an attorney visit or a medical appointment, that footage is restricted to the people with a legal right to see it — not everyone in the facility.
+Cameras that record without me touching them when something happens. Long enough battery for a full shift, no exceptions. When a recording stops and the device reaches WiFi or internet, everything uploads automatically and I'm done. If an inmate files a complaint, the footage is locked automatically and I can access it the next day. And if my camera captured an attorney visit or a medical appointment, that footage is restricted to the people with a legal right to see it — not everyone in the facility.
 </script>
 
 <script type="text/template" id="tpl-vl-transit-security">
@@ -4661,6 +4672,7 @@ weighted_needs:
 ## User Context
 
 Mobile deployment across transit properties — stations, platforms, vehicles, and patrol routes. Highly variable environments from outdoor exposed platforms to underground tunnels with no connectivity. Interacts with large volumes of the public daily. Incident types range from fare evasion to serious assault and medical emergencies. Operates in multi-agency environments where police response is common. Technology access for footage review is primarily through a supervisor at a transit control center or security office.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -4714,7 +4726,7 @@ environmental_factors:
   - factor: "Extreme heat"
     impact: "Outdoor summer platform duty creates device heat exposure. Camera must operate without throttling or shutdown in high ambient temperatures."
   - factor: "Low / intermittent connectivity"
-    impact: "Underground transit environments have no cellular connectivity. Cameras must buffer locally and upload when connectivity is restored — at a station, at end of shift, or at a surface location."
+    impact: "Underground transit environments have no cellular connectivity. Cameras must buffer locally and upload when WiFi or internet connectivity is restored — at a station, at street level, or anywhere else service returns."
 ```
 
 ### 🧤 Accessibility & Physical Factors
@@ -4746,13 +4758,13 @@ psychological_factors:
 scenarios:
   - trigger: Passenger assault on a crowded bus — victim, suspect, and 20 witnesses present
     goal: Capture usable footage of the assault, identify the suspect, and share footage with responding police before the bus clears at the next stop
-    current_pain: Standard FOV camera captures only what's directly in front of the officer, missing the assault that started 3 seats back; shaky footage from the moving bus is hard to review; sharing requires returning to the transit security office to upload
-    ideal_experience: Wide-angle camera captures the full bus interior at incident activation; image stabilization makes footage reviewable; near-real-time sharing sends a clip to responding police while they're still in transit to the scene
+    current_pain: Standard FOV camera captures only what's directly in front of the officer, missing the assault that started 3 seats back; shaky footage from the moving bus is hard to review; footage cannot be shared until the device regains WiFi or internet connectivity
+    ideal_experience: Wide-angle camera captures the full bus interior at incident activation; image stabilization makes footage reviewable; upload begins automatically once connectivity returns; near-real-time sharing sends a clip to responding police while they're still in transit to the scene
 
   - trigger: Fare evasion enforcement escalates to use of force — passenger files complaint against officer
     goal: Retrieve complete incident footage to support administrative review and potential civil litigation defense
     current_pain: Officer was in an underground section with no connectivity during the incident; footage buffered locally but upload queue is behind; footage availability is uncertain when complaint arrives the next morning
-    ideal_experience: Local buffering guarantees footage capture regardless of connectivity; upload completes at first docking or connectivity opportunity; footage is searchable by officer, date, and station; incident-tagged recording is preserved under administrative hold automatically when complaint is filed
+    ideal_experience: Local buffering guarantees footage capture regardless of connectivity; upload completes at the first WiFi or internet connectivity opportunity; footage is searchable by officer, date, and station; incident-tagged recording is preserved under administrative hold automatically when complaint is filed
 ```
 
 ## Anti-Goals

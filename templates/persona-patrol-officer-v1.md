@@ -10,7 +10,7 @@ icon: 🚔
 
 ## Who is this user?
 
-Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, dock. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
+Wears the camera every shift and is the primary source of footage in the system. The defining truth about this persona: they don't think about the body camera software. The camera is equipment — like a radio or sidearm — and their mental model is: activate, do the job, stop recording, and trust the upload to happen automatically. The system is only noticed when it creates friction, fails during a critical moment, or causes problems after the fact. They are not footage managers or compliance officers. They are first responders who happen to generate evidence.
 
 ## Needs & Challenges (Weighted)
 
@@ -22,8 +22,8 @@ weighted_needs:
     need: "Zero friction activation — camera must be recording before the situation escalates"
     context: "Officers draw their camera like they draw their weapon — in seconds, under stress, without looking. A camera that requires multiple steps, confirmation screens, or PIN entry before recording is a camera that won't be running when it matters most."
   - weight: 5/5 (Critical)
-    need: "Reliable automatic upload and docking without manual intervention"
-    context: "End of shift means getting home. Officers will not troubleshoot sync failures, re-dock cameras, or manually transfer footage. Docking must complete upload silently and automatically. Failures that require officer attention are failures that lose evidence."
+    need: "Reliable automatic cloud upload without manual intervention"
+    context: "End of shift means getting home. Officers will not troubleshoot sync failures or manually transfer footage. Once recording stops, upload should complete silently and automatically whenever WiFi or internet connectivity is available. Failures that require officer attention are failures that lose evidence."
   - weight: 4/5 (High)
     need: "Simple, fast incident tagging without disrupting the call workflow"
     context: "Policies require tagging footage by incident type, case number, or call type. This must happen in seconds with minimal input — ideally one tap or auto-populated from CAD data. Any tagging workflow that takes more than 10 seconds at scene will be skipped."
@@ -40,14 +40,14 @@ weighted_needs:
 
 ## User Context
 
-In the field — on foot, in a vehicle, or at a scene. The body camera is attached to uniform and activates in response to policy triggers (traffic stops, use of force, arrests) or manual activation. Officers are managing radio traffic, safety considerations, and tactical awareness simultaneously. End-of-shift docking happens at the station, often when tired. They interact with the desktop/web software rarely — primarily to review a specific piece of footage they need for a report. Tech access is through department-issued devices with restricted permissions.
+In the field — on foot, in a vehicle, or at a scene. The body camera is attached to uniform and activates in response to policy triggers (traffic stops, use of force, arrests) or manual activation. Officers are managing radio traffic, safety considerations, and tactical awareness simultaneously. Visual Labs does not use docks to upload footage; once recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. They interact with the desktop/web software rarely — primarily to review a specific piece of footage they need for a report. Tech access is through department-issued devices with restricted permissions.
 
 ## Behavioral & Psychographic Profile
 
 ```yaml
 tech_proficiency: 4/10 — Comfortable with the hardware camera unit but not the backend software. Uses the system as it was trained, not exploratorily. Expects things to work without configuration.
 risk_tolerance: 5/10 — Personally risk-averse about footage — missing or lost footage is a career and legal risk. Risk tolerant operationally.
-stress_level_during_use: 8/10 — Camera activation occurs in high-stress moments (traffic stops, confrontations, use of force). Post-shift docking is low-stress but fatigue is high.
+stress_level_during_use: 8/10 — Camera activation occurs in high-stress moments (traffic stops, confrontations, use of force). Post-shift upload awareness is low-stress but fatigue is high.
 decision_speed: Seconds — Activation decisions happen in seconds. In-field tagging in seconds. No deliberation.
 adoption_attitude: Pragmatic skeptic — Will adopt tools that make the job easier or reduce liability. Resents tools that add administrative burden.
 primary_motivation: Doing the job safely and going home — the camera is protection, evidence, and policy compliance.
@@ -118,7 +118,7 @@ psychological_factors:
   - factor: "Acute stress / life-threatening situation"
     impact: "Use-of-force situations trigger fight-or-flight. Camera activation must be habituated — a single, unmistakable motion. Multi-step activation will not happen under acute stress."
   - factor: "Decision fatigue"
-    impact: "End of a 12-hour shift, especially on busy nights. Docking, tagging, and any post-shift software interaction suffers from depleted attention. Must be automatic or near-zero effort."
+    impact: "End of a 12-hour shift, especially on busy nights. Upload completion, tagging, and any post-shift software interaction suffers from depleted attention. Must be automatic or near-zero effort."
   - factor: "External organizational / political pressure"
     impact: "Officers know footage may be reviewed by supervisors, IA, and the public. This creates both protective motivation (wanting it to record) and anxiety about review context."
 ```
@@ -131,7 +131,7 @@ scenarios:
   - trigger: Traffic stop escalates to use of force
     goal: Camera is recording from the moment of escalation, footage is automatically saved and tagged
     current_pain: Manual activation required, officer under stress may forget or activate too late; post-incident tagging requires going back into a portal and filling out fields while still at scene
-    ideal_experience: Pre-event buffer captures escalation; single button activation with unmistakable visual/haptic confirmation; CAD call number auto-populates the tag; docking at end of shift uploads silently
+    ideal_experience: Pre-event buffer captures escalation; single button activation with unmistakable visual/haptic confirmation; CAD call number auto-populates the tag; once recording stops, upload happens silently as soon as WiFi or internet connectivity is available
 
   - trigger: Officer receives complaint two weeks after an incident
     goal: Pull up the BWC footage from that specific call quickly to prepare for internal interview
@@ -148,8 +148,8 @@ scenarios:
 
 ## Domain Vocabulary
 
-`BWC, body cam, activation, pre-event buffer, dock, upload, sync, incident tag, use of force, UOF, traffic stop, arrest, CAD, dispatch, call number, report writing, chain of custody, IA, complaint, protective recording, shift, end of shift, rollcall`
+`BWC, body cam, activation, pre-event buffer, upload, sync, incident tag, use of force, UOF, traffic stop, arrest, CAD, dispatch, call number, report writing, chain of custody, IA, complaint, protective recording, shift, end of shift, rollcall`
 
 ## Wish List
 
-Hit one button and know it's recording. That's it. At the end of shift I dock it and forget about it — everything uploads automatically. When I need footage for a report, I find it in seconds by date and call number. No portals, no passwords, no waiting. If there's a complaint, I can pull up exactly what happened without needing to ask IT or a supervisor. The system protects me the same way it protects the public.
+Hit one button and know it's recording. That's it. When the recording ends, everything uploads automatically as soon as WiFi or internet is available. When I need footage for a report, I find it in seconds by date and call number. No portals, no passwords, no waiting. If there's a complaint, I can pull up exactly what happened without needing to ask IT or a supervisor. The system protects me the same way it protects the public.

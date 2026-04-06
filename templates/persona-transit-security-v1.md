@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Mobile deployment across transit properties — stations, platforms, vehicles, and patrol routes. Highly variable environments from outdoor exposed platforms to underground tunnels with no connectivity. Interacts with large volumes of the public daily. Incident types range from fare evasion to serious assault and medical emergencies. Operates in multi-agency environments where police response is common. Technology access for footage review is primarily through a supervisor at a transit control center or security office.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
@@ -94,7 +95,7 @@ environmental_factors:
   - factor: "Extreme heat"
     impact: "Outdoor summer platform duty creates device heat exposure. Camera must operate without throttling or shutdown in high ambient temperatures."
   - factor: "Low / intermittent connectivity"
-    impact: "Underground transit environments have no cellular connectivity. Cameras must buffer locally and upload when connectivity is restored — at a station, at end of shift, or at a surface location."
+    impact: "Underground transit environments have no cellular connectivity. Cameras must buffer locally and upload when WiFi or internet connectivity is restored — at a station, at street level, or anywhere else service returns."
 ```
 
 ### 🧤 Accessibility & Physical Factors
@@ -126,13 +127,13 @@ psychological_factors:
 scenarios:
   - trigger: Passenger assault on a crowded bus — victim, suspect, and 20 witnesses present
     goal: Capture usable footage of the assault, identify the suspect, and share footage with responding police before the bus clears at the next stop
-    current_pain: Standard FOV camera captures only what's directly in front of the officer, missing the assault that started 3 seats back; shaky footage from the moving bus is hard to review; sharing requires returning to the transit security office to upload
-    ideal_experience: Wide-angle camera captures the full bus interior at incident activation; image stabilization makes footage reviewable; near-real-time sharing sends a clip to responding police while they're still in transit to the scene
+    current_pain: Standard FOV camera captures only what's directly in front of the officer, missing the assault that started 3 seats back; shaky footage from the moving bus is hard to review; footage cannot be shared until the device regains WiFi or internet connectivity
+    ideal_experience: Wide-angle camera captures the full bus interior at incident activation; image stabilization makes footage reviewable; upload begins automatically once connectivity returns; near-real-time sharing sends a clip to responding police while they're still in transit to the scene
 
   - trigger: Fare evasion enforcement escalates to use of force — passenger files complaint against officer
     goal: Retrieve complete incident footage to support administrative review and potential civil litigation defense
     current_pain: Officer was in an underground section with no connectivity during the incident; footage buffered locally but upload queue is behind; footage availability is uncertain when complaint arrives the next morning
-    ideal_experience: Local buffering guarantees footage capture regardless of connectivity; upload completes at first docking or connectivity opportunity; footage is searchable by officer, date, and station; incident-tagged recording is preserved under administrative hold automatically when complaint is filed
+    ideal_experience: Local buffering guarantees footage capture regardless of connectivity; upload completes at the first WiFi or internet connectivity opportunity; footage is searchable by officer, date, and station; incident-tagged recording is preserved under administrative hold automatically when complaint is filed
 ```
 
 ## Anti-Goals

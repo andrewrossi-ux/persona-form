@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Split between field supervision and desk work. Reviews footage on a workstation at the precinct, often under time pressure from internal affairs, command, or public complaints. Manages squad cameras in the evidence system and runs shift briefings using footage for training moments. Chronic moderate stress that spikes when complaints arrive or incidents go public. Relies heavily on search and filter tools — any friction in finding specific footage is a direct operational cost.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

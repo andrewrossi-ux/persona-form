@@ -23,7 +23,7 @@ weighted_needs:
     context: "Corrections environments involve direct physical contact during use-of-force incidents, restraint, and cell extractions. Cameras must survive impact, being grabbed, and intense physical activity. If the camera stops recording during a use-of-force event, the footage gap becomes the center of every complaint."
   - weight: 5/5 (Critical)
     need: "Long battery life supporting a full 12-hour shift with continuous recording"
-    context: "Corrections shifts are 12 hours. Officers cannot leave the secure facility to recharge or dock cameras mid-shift. Battery life must cover the full shift, with margin. Dead batteries at the critical moment are a liability catastrophe."
+    context: "Corrections shifts are 12 hours. Officers cannot leave the secure facility to recharge devices or depend on mid-shift connectivity. Battery life must cover the full shift, with margin. Dead batteries at the critical moment are a liability catastrophe."
   - weight: 4/5 (High)
     need: "Automatic activation during use-of-force events — triggered by duress button or physical motion"
     context: "Use-of-force events in corrections happen without warning. Officers are already engaged before they think about a camera. Duress-button-triggered recording or accelerometer-based activation ensures the camera captures the incident even if manual activation was missed."
@@ -40,7 +40,7 @@ weighted_needs:
 
 ## User Context
 
-Secure facility environment — no external connectivity in most of the building. Wireless upload may not be possible in all facility areas due to signal blocking. Physical docking at end of shift or during breaks is the primary upload mechanism. Access to footage review happens in a secure control room or administrative area. The environment is inherently isolated from standard IT infrastructure, and technology deployments must account for the physical security requirements of the facility.
+Secure facility environment — no external connectivity in most of the building. Wireless upload may not be possible in all facility areas due to signal blocking. Visual Labs does not use docks to upload footage; once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. Access to footage review happens in a secure control room or administrative area. The environment is inherently isolated from standard IT infrastructure, and technology deployments must account for the physical security requirements of the facility.
 
 ## Behavioral & Psychographic Profile
 
@@ -86,7 +86,7 @@ feature_usage:
 ```yaml
 environmental_factors:
   - factor: "Low / intermittent connectivity"
-    impact: "Most secure facility areas have no WiFi or cellular connectivity. Cameras must buffer locally for the full shift and upload at docking. Any architecture requiring live connectivity for recording will fail inside the facility."
+    impact: "Most secure facility areas have no WiFi or cellular connectivity. Cameras must buffer locally for the full shift and upload automatically once WiFi or internet connectivity is available. Any architecture requiring live connectivity for recording will fail inside the facility."
   - factor: "Confined or cramped space"
     impact: "Cell blocks, housing units, and sally ports are physically constrained environments. Camera mounting, interaction design, and recording angle must account for close-quarters physical confrontations."
   - factor: "High ambient noise"
@@ -100,7 +100,7 @@ accessibility_factors:
   - factor: "Arms encumbered / carrying gear"
     impact: "Officers carry keys, radio, OC spray, and restraint equipment. Camera must mount securely and not be easily grabbed by an inmate during a confrontation."
   - factor: "Physical fatigue / tremor"
-    impact: "12-hour shifts in physically demanding environments. End-of-shift camera docking and incident documentation must require minimal effort."
+    impact: "12-hour shifts in physically demanding environments. End-of-shift upload completion and incident documentation must require minimal effort."
 ```
 
 ### 🧠 Psychological & Cognitive Factors
@@ -127,7 +127,7 @@ scenarios:
 
   - trigger: Inmate files excessive force complaint — facility investigation begins
     goal: Retrieve complete footage from the incident and all officers present for administrative review
-    current_pain: Upload queue on a shared docking station creates gaps; footage from some officers uploaded successfully, others didn't; storage in the facility is limited and footage near purge threshold
+    current_pain: Some footage is still waiting for WiFi or internet connectivity before cloud upload completes; footage from some officers is already available while others remain pending; storage in the facility is limited and footage near purge threshold
     ideal_experience: Incident-triggered legal hold preserves footage from all involved officers automatically; retrieval for administrative review requires one search by incident number; no footage purged while hold is active regardless of retention schedule
 ```
 
@@ -144,4 +144,4 @@ scenarios:
 
 ## Wish List
 
-Cameras that record without me touching them when something happens. Long enough battery for a full shift, no exceptions. When I dock at the end of shift, everything uploads and I'm done. If an inmate files a complaint, the footage is locked automatically and I can access it the next day. And if my camera captured an attorney visit or a medical appointment, that footage is restricted to the people with a legal right to see it — not everyone in the facility.
+Cameras that record without me touching them when something happens. Long enough battery for a full shift, no exceptions. When a recording stops and the device reaches WiFi or internet, everything uploads automatically and I'm done. If an inmate files a complaint, the footage is locked automatically and I can access it the next day. And if my camera captured an attorney visit or a medical appointment, that footage is restricted to the people with a legal right to see it — not everyone in the facility.

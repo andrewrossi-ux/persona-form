@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Office-based at the DA's office — separate from the police department's systems. Standard desktop workstation. Works under case deadline pressure with heavy caseloads. Receives footage from multiple agencies using different BWC platforms. Has no direct access to the evidence management system and depends entirely on what detectives or evidence technicians provide. Time to trial preparation is compressed. Not a technology specialist — expects evidence to arrive ready to use.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

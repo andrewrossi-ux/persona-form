@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Working at a desk in an investigations unit — typically a standard workstation with one or two monitors. Case loads are heavy and time is scarce. BWC review is one of many evidence types being managed simultaneously (witness interviews, surveillance video, forensics). Access to footage must be possible without involving evidence technicians for routine case work. Chain-of-custody consciousness is constant — every action has potential courtroom implications.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

@@ -35,12 +35,12 @@ weighted_needs:
     context: "Evidence storage is expensive and grows continuously. IT needs forecasting tools, automated tiering to cold storage for aged footage, and retention policy integration that purges eligible footage without manual intervention."
   - weight: 2/5 (Low)
     need: "Diagnostic tools for connectivity and sync failure investigation"
-    context: "When a camera fails to upload, IT needs to understand why: network issue, hardware failure, docking station malfunction, or software bug. Without diagnostic tooling, every failure investigation requires on-site physical inspection."
+    context: "When a camera fails to upload, IT needs to understand why: network issue, hardware failure, lost WiFi/internet connectivity, or software bug. Without diagnostic tooling, every failure investigation requires on-site physical inspection."
 ```
 
 ## User Context
 
-Works in an IT office or data center environment. Manages the BWC system as one of many department technology systems alongside CAD, RMS, network infrastructure, and mobile devices. Has direct access to backend systems that other personas cannot reach. Interacts with the BWC vendor's technical support for escalated issues. May also be responsible for physical docking station installation, network configuration, and CJIS compliance for the system.
+Works in an IT office or data center environment. Manages the BWC system as one of many department technology systems alongside CAD, RMS, network infrastructure, and mobile devices. Has direct access to backend systems that other personas cannot reach. Interacts with the BWC vendor's technical support for escalated issues. Visual Labs does not use docks to upload footage; once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available. This persona is therefore responsible for network configuration, connectivity reliability, and CJIS compliance for the system.
 
 ## Behavioral & Psychographic Profile
 
@@ -101,11 +101,11 @@ scenarios:
   - trigger: Pre-shift rollcall — supervisor reports 3 cameras didn't upload last night
     goal: Diagnose the upload failures, restore connectivity, and confirm footage is captured before officers go on shift
     current_pain: No centralized visibility into upload status by camera serial number; must log into the backend console and filter through sync logs; three different cameras could have three different failure causes with no way to triage remotely
-    ideal_experience: Fleet dashboard shows exactly which 3 cameras failed with failure code (network, hardware, docking station); one-click diagnostic shows last sync attempt and error; remote reset and re-sync initiated from dashboard without touching the physical device
+    ideal_experience: Fleet dashboard shows exactly which 3 cameras failed with failure code (network, hardware, connectivity, software); one-click diagnostic shows last sync attempt and error; remote reset and re-sync initiated from dashboard without touching the physical device
 
   - trigger: New firmware version released — need to deploy to all 200 cameras without interrupting active shift recording
     goal: Stage and deploy firmware update during off-peak hours with automatic rollback if failure rate exceeds threshold
-    current_pain: Update must be initiated camera by camera or in small batches; no rollback mechanism if new firmware causes issues; no deployment status dashboard showing which cameras have updated; rogue officers who never dock delay deployment for months
+    current_pain: Update must be initiated camera by camera or in small batches; no rollback mechanism if new firmware causes issues; no deployment status dashboard showing which cameras have updated; devices that fail to reconnect to WiFi or internet delay deployment for months
     ideal_experience: Scheduled deployment window targets all cameras not currently recording; deployment dashboard shows real-time adoption rate; automatic rollback triggers if error rate exceeds 5%; post-deployment report shows coverage percentage with list of remaining non-compliant cameras
 ```
 
@@ -118,7 +118,7 @@ scenarios:
 
 ## Domain Vocabulary
 
-`fleet management, firmware, OTA update, docking station, CJIS, SSAE, Active Directory, SSO, SAML, role-based access control, RBAC, storage tiering, cold storage, sync failure, upload queue, device health, battery lifecycle, audit log, compliance report, staging environment`
+`fleet management, firmware, OTA update, cloud upload, CJIS, SSAE, Active Directory, SSO, SAML, role-based access control, RBAC, storage tiering, cold storage, sync failure, upload queue, device health, battery lifecycle, audit log, compliance report, staging environment`
 
 ## Wish List
 

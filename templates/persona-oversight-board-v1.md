@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Meeting environment and home/office use — not a law enforcement facility. Board members are community volunteers, attorneys, academics, or advocates with varied technical backgrounds. Access must be browser-based, secure, and require no specialized software or configuration. Reviews are episodic — triggered by complaints or scheduled review cycles, not daily use. Technical support is limited; the interface must be self-explanatory.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 

@@ -41,6 +41,7 @@ weighted_needs:
 ## User Context
 
 Primarily desk-based in an evidence management room or administrative unit. Works with web-based evidence management software across multiple monitors. Manages both physical evidence (hardware, drives) and digital evidence (video, metadata). Receives requests from detectives, IA, prosecutors, and supervisors. Always under deadline pressure from legal holds and discovery requests. Often a one or two-person team for an entire department.
+Visual Labs does not use docks to upload footage. Once a recording stops, footage uploads automatically to the cloud when WiFi or internet connectivity is available.
 
 ## Behavioral & Psychographic Profile
 
